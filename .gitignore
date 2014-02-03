@@ -1,4 +1,114 @@
+##############################
+# BINARIES
+##############################
+# Compiled Java bytecode files
 *.class
+# Java package files 
+*.jar
+*.war
+*.ear
+
+
+
+############################
+# OS-GENERATED JUNK  FILES
+############################
+# OSX filesystem junk
+.DS_Store
+.DS_Store?
+._*
+.~*
+.metadata
+.Spotlight-V100
+.Trashes
+# Windows filesystem junk (just in case)
+ehthumbs.db
+Thumbs.db
+
+###########################
+# EDITOR GARBAGE FILES
+###########################
+# Emacs backup files
+*~
+# eclim worspace file
+workspace.xmi
+eclim/*
+# SublimeText workspace files
+*.sublime-project
+*.sublime-workspace
+# Eclipse junk
+
+# Ignore gedit backup files
+*~
+*.pydevproject
+.project
+.metadata
+bin/**
+tmp/**
+tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/
+.loadpath
+
+# External tool builders
+.externalToolBuilders/
+
+# Locally stored "Eclipse launch configurations"
+*.launch
+
+# CDT-specific
+.cproject
+
+# PDT-specific
+.buildpath
+
+# Eclim-config file
+eclim/.eclimrc_k
+
+############
+# LaTeX JUNK
+############
+
+*.acn
+*.acr
+*.alg
+*.aux
+*.bbl
+*.blg
+*.dvi
+*.fdb_latexmk
+*.glg
+*.glo
+*.gls
+*.idx
+*.ilg
+*.ind
+*.ist
+*.lof
+*.log
+*.lot
+*.maf
+*.mtc
+*.mtc0
+*.nav
+*.nlo
+*.out
+*.pdfsync
+*.ps
+*.snm
+*.synctex.gz
+*.toc
+*.vrb
+*.xdy
+*.tdo
+
+# Also PDFs
+*.pdf
 
 # Package Files #
 *.jar
