@@ -1,0 +1,64 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[titletoc]{appendix}
+\usepackage[ruled,vlined,longend,commentsnumbered]{algorithm2e}
+\usepackage[compatibility=false]{caption}
+\usepackage{fullpage, listings, footnote, graphicx, floatrow, hyperref, multicol, enumitem, latexsym, placeins, color}
+\setdescription{leftmargin=\parindent,labelindent=\parindent}
+\pdfpxdimen=\dimexpr 1 in/72\relax
+\lstdefinestyle{boxedPy}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=L,
+  xleftmargin=\parindent,
+  language=Python,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  keywordstyle=\bfseries\color,
+  commentstyle=\itshape\color,
+  tabsize=4,
+  numbers=left
+}
+\author{Hawk Weisman\\Allegheny College Dept. of Computer Science}
+\title{\texttt{traverse.py}: Automated Traversal of Filesystems for Data Collection \& Analysis}
+\date{Monday, February 10th, 2014}
+\begin{document}
+	\maketitle
+	\section{Introduction}
+
+		An understanding of 
+
+	\section{Methods}
+		\subsection{Filesystem Data Collection}
+
+			The traversal tool \texttt{traverse.py} automatically traverses filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
+		
+			\begin{algorithm}[H]
+			\label{alg:recursivewalk}
+				\SetAlgoLined
+				\DontPrintSemicolon
+				\SetKwFunction{FTrav}{Traverse}%
+				\SetKwFunction{Stat}{os.stat}
+
+				\Fn{\FTrav{directory}}{
+					\KwData{$directory$: A path to a directory}
+	 				\KwResult{Stat data collected on the filesystem tree beginning at that directory}	
+					\ForEach{$item$ in $directory$}{
+						\Fn{\Stat{$item$}}\;
+						\If{$item$ is a directory}{
+							\Call{\Fn{\Trav{$item$}}}
+						}\endif
+					}\endfor
+				}
+			  \caption{Recursive walk algorithm for filesystem traversal and data collection}
+			\end{algorithm}
+
+			Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection-time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Furthermore, response time was improved significantly by using calls to \texttt{os.stat()} to collect all data on any given file using one \texttt{stat()} system call. If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{ap:a}.
+
+		\subsection{Filesystem Data Analysis}
+	\section{Results}
+	\section{Analysis \& Discussion}
+	\appendix
+	\section{Source Code Listing for \texttt{traverse.py}}\label{ap:a}
+		\lstinputlisting[style=boxedPy]{traverse.py}
+
+\end{document}
