@@ -55,6 +55,9 @@
 			Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection-time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Furthermore, response time was improved significantly by using calls to \texttt{os.stat()} to collect all data on any given file using one \texttt{stat()} system call. If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{ap:a}.
 
 		\subsection{Filesystem Data Analysis}
+			\subsubsection{Data Presentation}
+
+				File size distribution was displayed as a histogram with a logarithmic y-axis.
 	\section{Results}
 	\section{Analysis \& Discussion}
 	\appendix
