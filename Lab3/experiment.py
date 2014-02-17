@@ -8,20 +8,20 @@ from datetime import datetime
 
 filename = "experiment " + str(datetime.now()) + ".csv" 
 
-consumerNumbers = [n for n in range(4,10)]
-dataNumbers = [n for n in range(1000,10100) if n % 100 == 0]
+consumerNumbers = [2,4,6,8]
+dataNumbers = [10,100,1000,10000]
 
 with open(filename, 'w') as csvfile:
 
 	csvwriter = csv.writer(csvfile)
-	csvwriter.writerow(["consumers", "data", "time"])
+	csvwriter.writerow(["consumers", "data", "replicate", "time"])
 
-	for consumers in consumerNumbers:
-		for data in dataNumbers:
-			args = "\\\"-Dargs=\\\"-c {c!s} -i {d!s}\\\"\\\"".format(c = consumers, d = data)
+	for data in dataNumbers:
+		for consumers in consumerNumbers:
+			args = "\\\"-Dargs=\\\"-c {c!s} -i {d!s} \\\"\\\"".format(c = consumers, d = data)
 			call = "subprocess.call([\"ant\", \"run\", \"{args}\"])".format(args=args)
-			for i in range(1, 10):
-				csvwriter.writerow([consumers,data,timeit(stmt=call, setup="import subprocess")])
-				#print call
+			for i in range(1, 4):
+				print ("Running experiment with {c} consumers and {d} data items, replicate {r}".format(c = consumers, d = data, r = i))
+				csvwriter.writerow([consumers,data,i,timeit(stmt=call, setup="import subprocess", number=1)])
 
 csvfile.close()
