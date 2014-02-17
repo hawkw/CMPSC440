@@ -1,8 +1,8 @@
 \documentclass[12pt,a4paper]{article}
+\usepackage{algorithm,algpseudocode}
 \usepackage[titletoc]{appendix}
-\usepackage[ruled,vlined,longend,commentsnumbered]{algorithm2e}
 \usepackage[compatibility=false]{caption}
-\usepackage{fullpage, listings, footnote, graphicx, floatrow, hyperref, multicol, enumitem, latexsym, placeins, color}
+\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, color, csvsimple}
 \setdescription{leftmargin=\parindent,labelindent=\parindent}
 \pdfpxdimen=\dimexpr 1 in/72\relax
 \lstdefinestyle{boxedPy}{
@@ -23,36 +23,59 @@
 \date{Monday, February 10th, 2014}
 \begin{document}
 	\maketitle
+	\tableofcontents
 	\section{Introduction}
-
-		An understanding of 
+		
+		An understanding of filesystem characteristics is key to the successful design and implementation of operating systems. Knowledge of typical filesystem use patterns makes it possible to optimize filesystems to support those patterns. While these systems can be implemented based on projections and conjecture, information collected from real filesystems ``in the wild'' provide a much more accurate picture of filesystem use patterns. However, in order to draw meaningful conclusions from such empirically gathered data, it is necessary to collect samples from a large number of individual machines, across as wide a range of hardware and software environments and use cases as possible. Therefore, instruments for data collection must be as portable and versatile as possible.
 
 	\section{Methods}
 		\subsection{Filesystem Data Collection}
 
-			The traversal tool \texttt{traverse.py} automatically traverses filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
-		
-			\begin{algorithm}[H]
-			\label{alg:recursivewalk}
-				\SetAlgoLined
-				\DontPrintSemicolon
-				\SetKwFunction{FTrav}{Traverse}%
-				\SetKwFunction{Stat}{os.stat}
+			\subsubsection{Traversal Tool Implementation}
 
-				\Fn{\FTrav{directory}}{
-					\KwData{$directory$: A path to a directory}
-	 				\KwResult{Stat data collected on the filesystem tree beginning at that directory}	
-					\ForEach{$item$ in $directory$}{
-						\Fn{\Stat{$item$}}\;
-						\If{$item$ is a directory}{
-							\Call{\Fn{\Trav{$item$}}}
-						}\endif
-					}\endfor
-				}
-			  \caption{Recursive walk algorithm for filesystem traversal and data collection}
-			\end{algorithm}
+				A tool was implemented to collect data on filesystem usage characteristics by automatically traversing filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
+			
+				\alglanguage{pseudocode}
+				\begin{algorithm}
+					\caption{Recursive walk algorithm for filesystem traversal and data collection.}
+					\label{alg:recursivewalk}
+					\begin{algorithmic}[1]
+					\Procedure{traverse}{$directory$}
+				   	\For{$item$ in $directory$}
+				   		\State \Call{stat}{$item$}
+				     	\If{\Call{type}{$item$} is directory}
+				     	\State \Call{traverse}{$item$}
+				     	\EndIf
+				   	\EndFor
+					\EndProcedure
+					\end{algorithmic}
+				\end{algorithm}
 
-			Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection-time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Furthermore, response time was improved significantly by using calls to \texttt{os.stat()} to collect all data on any given file using one \texttt{stat()} system call. If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{ap:a}.
+				Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Windows, Mac OS X, and POSIX-compatible Unix operating systems are the primary targets for this study, and the Python 3 interpreter is available on all of those environments. 
+
+				Data was collected using the Python function \texttt{os.stat()}, which wraps the operating system's \texttt{stat} system call. All of the targeted operating systems this syscall, which, given a path, returns specific information on the inode at that path. The POSIX standard, implemented by most Unix operating systems, defines what information this syscall returns, and the Windows \texttt{stat} call conforms to this standard as well. A call to \texttt{stat} returns the following information:
+
+				\begin{description}[leftmargin=3cm, style=sameline]
+					\begin{multicols}{2}
+						\item[\texttt{st\_mode}]{protection bits}
+						\item[\texttt{st\_ino}]{inode number}
+						\item[\texttt{st\_dev}]{device}
+						\item[\texttt{st\_uid}]{user ID number of owner}
+						\item[\texttt{st\_gid}]{group ID number of owner}
+						\item[\texttt{st\_size}]{size of file (in bytes)}
+					\end{multicols}
+					\item[\texttt{st\_nlink}]{number of hard links to inode}
+					\item[\texttt{st\_atime}]{timestamp of most recent access}
+					\item[\texttt{st\_mtime}]{timestamp of most recent modification}
+					\item[\texttt{st\_ctime}]{timestamp of most recent metadata change (Unix), or file creation (Windows)}
+				\end{description}
+
+				If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
+				A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{ap:traverse}.
+
+			\subsubsection{Data Collection}
+
+				Filesystem data was collected 
 
 		\subsection{Filesystem Data Analysis}
 			\subsubsection{Data Presentation}
@@ -61,7 +84,21 @@
 	\section{Results}
 	\section{Analysis \& Discussion}
 	\appendix
-	\section{Source Code Listing for \texttt{traverse.py}}\label{ap:a}
-		\lstinputlisting[style=boxedPy]{traverse.py}
 
+		\section{Data Sources}\label{ap:data}
+
+		\begin{tabular}{|l|c|r|}\hline%
+			\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
+			\csvreader[head to column names]{datafiles.csv}{}%
+			{\\\Name & \Platform & \Timestamp}%
+		     \\\hline
+		   \end{tabular}
+
+		\section{Source Code Listing for \texttt{traverse.py}}\label{ap:traverse}
+
+			%\lstinputlisting[style=boxedPy]{traverse/src/traverse.py}
+
+		\section{Source Code Listing for \texttt{traverselite.py}}\label{ap:traverselite}
+
+			%\lstinputlisting[style=boxedPy]{traverse/src/traverselite.py}
 \end{document}
