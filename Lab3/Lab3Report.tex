@@ -53,9 +53,7 @@
 \date{Monday, February 17th, 2014}
 \begin{document}
 	\maketitle
-
-  \section{How multi-threaded Java programs use \texttt{synchronized}}
-
+  	\section{How multi-threaded Java programs use \texttt{synchronized}}
 
 	Java offers the \texttt{synchronized} keyword for ensuring thread-safety in Java programs. While understanding \texttt{synchronized} in its entirity requires an understanding of the Java memory model, it can be summarized relatively simoly. A method may be made synchronized simply by adding the \texttt{synchronized} keyword to the method declaration, as shown in Listing \ref{lst:method}. Doing so which has two effects: First, it ensures that only one thread may access a synchronized method on the same object at any given time. If a thread is executing a synchronized method, all other threads that attempt to execute the same method on that object block until the first thread's execution is complete. Secondly, it also ensures that synchronized method exits take place before any subsequent invocation of any synchronized method on that object, ensuring that any modifications to the object's state are visible across threads. Together, these effects ensure that two threads may not modify the object's state at the same time.
 
@@ -151,5 +149,23 @@ public class MultilockExample{
   	If calls to \texttt{notifyAll()} and \texttt{wait()}, which throw the exception, are removed, the program runs without throwing exceptions. However, it uses massive amounts of CPU time compared to synchronized execution. The cause of this can be determined by running the defective program in verbose mode and analyzing the output. When the program is not synchronized, every time a number is \texttt{put()} into the \texttt{CubbyHole}, each \texttt{Consumer} \texttt{get())}s it a number of times. This is because a lock is no longer enforced on the contents of the \texttt{CubbyHole}, allowing all the producers to access it simultaneously, and resulting in a significant increase in the number of operations the CPU must perform.
 
   \section{An experimental study of multi-threaded performance}
+
+  \appendix
+  
+		\section{Experiment Runner Source Code}
+
+			\lstinputlisting[style=appendixPy]{experiment.py}
+
+		\section{Modified Producer-Consumer Model Source Code}
+			
+			\subsection{ProducerConsumerModel.java}
+
+				\lstinputlisting[style=appendixJava]{src/ProducerConsumerModel.java}
+
+			\subsection{Parameters.java}
+
+				\lstinputlisting[style=appendixJava]{src/Parameters.java}
+
+
 
 \end{document}
