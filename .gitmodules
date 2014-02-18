@@ -1,0 +1,6 @@
+[submodule "traverse"]
+	path = traverse
+	url = https://github.com/hawkw/traverse.git
+[submodule "cs440s2014-share"]
+	path = cs440s2014-share
+	url = git@bitbucket.org:gkapfham/cs440s2014-share.git
