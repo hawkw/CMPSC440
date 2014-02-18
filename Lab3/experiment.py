@@ -6,10 +6,10 @@ import csv
 from timeit import timeit
 from datetime import datetime
 
-filename = "experiment " + str(datetime.now()) + ".csv" 
+filename = "experiment " + str(datetime.now()).replace('/', '-') + ".csv" 
 
 consumerNumbers = [2,4,6,8]
-dataNumbers = [10,100,1000,10000]
+dataNumbers = [10,100,1000,3000,5000,7000,10000]
 
 with open(filename, 'w') as csvfile:
 
