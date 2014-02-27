@@ -2,7 +2,7 @@
 \usepackage{algorithm,algpseudocode}
 \usepackage[titletoc]{appendix}
 \usepackage[compatibility=false]{caption}
-\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, color, csvsimple}
+\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, csvsimple, float}
 \setdescription{leftmargin=\parindent,labelindent=\parindent}
 \pdfpxdimen=\dimexpr 1 in/72\relax
 \lstdefinestyle{appendixPy}{
@@ -14,12 +14,12 @@
   showstringspaces=false,
   basicstyle=\small,
   numberstyle=\tiny,
-  keywordstyle=\bfseries\color,
-  commentstyle=\itshape\color,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
   numbers = left,
   tabsize=4,
 }
-\lstdefinestyle{appendixJava}{
+\lstdefinestyle{appendixJava}{%
   belowcaptionskip=1\baselineskip,
   breaklines=true,
   xleftmargin=\parindent,
@@ -28,12 +28,26 @@
   showstringspaces=false,
   basicstyle=\small,
   numberstyle=\tiny,
-  keywordstyle=\bfseries\color,
-  commentstyle=\itshape\color,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
   numbers = left,
   tabsize=4,
 }
-\lstdefinestyle{insetJava}{
+\lstdefinestyle{appendixXML}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=XML,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{insetJava}{%
   belowcaptionskip=1\baselineskip,
   breaklines=true,
   frame=tb,
@@ -43,8 +57,8 @@
   showstringspaces=false,
   basicstyle=\small,
   numberstyle=\tiny,
-  keywordstyle=\bfseries\color,
-  commentstyle=\itshape\color,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
   numbers = left,
   tabsize=4,
 }
@@ -53,11 +67,11 @@
 \date{Monday, February 17th, 2014}
 \begin{document}
 	\maketitle
-  	\section{How multi-threaded Java programs use \texttt{synchronized}}
+	\section{How multi-threaded Java programs use \texttt{synchronized}}
 
 	Java offers the \texttt{synchronized} keyword for ensuring thread-safety in Java programs. While understanding \texttt{synchronized} in its entirity requires an understanding of the Java memory model, it can be summarized relatively simoly. A method may be made synchronized simply by adding the \texttt{synchronized} keyword to the method declaration, as shown in Listing \ref{lst:method}. Doing so which has two effects: First, it ensures that only one thread may access a synchronized method on the same object at any given time. If a thread is executing a synchronized method, all other threads that attempt to execute the same method on that object block until the first thread's execution is complete. Secondly, it also ensures that synchronized method exits take place before any subsequent invocation of any synchronized method on that object, ensuring that any modifications to the object's state are visible across threads. Together, these effects ensure that two threads may not modify the object's state at the same time.
 
-		\begin{lstlisting}[style=insetJava, caption=Example of synchronized method declarations., label=lst:method]
+\begin{lstlisting}[style=insetJava, label=lst:method,caption=Example of synchronized method declarations.]
 private int value;
 
 public synchronized void setValue(int value){
@@ -67,7 +81,7 @@ public synchronized void setValue(int value){
 public synchronized void getValue(){
 	return value;
 }
-		\end{lstlisting}
+\end{lstlisting}
 
 	Within the Java memory model, synchronization functions using an entity called a \textit{monitor lock}, or \textit{monitor}. Every object has such a lock associated with it, and a thread which desires access to that object's fields must \textit{acquire} the monitor lock for that object and then \textit{release} when it is finished. Only the thread which currently owns the lock may change the object's state -- all others are blocked. When the thread releases the lock, the JVM ensures that all changes to the object's state take place before any other threads attempt to acquire the lock. When a thread executes a \texttt{synchronized} method, it automatically acquire the lock on the object which contains that method and then releases it when the method returns. Access to static fields of a class is controlled by a separate lock than that which controls any individual instance of that class.
 
@@ -125,49 +139,88 @@ public class MultilockExample{
 
   \section{The execution behavior of a multi-threaded Java program}
 
-  	In a multi-threaded Java program, a thread may, at any time, be in one of the following states:
-  	\begin{description}
-  		\item[new]{Also known as ``born''. Threads are created in this state, and they remain in it until the program starts them.}
-  		\item[runnable]{After a thread has been started, it becomes runnable. Runnable threads are considered to be executing their tasks.}
-  		\item[waiting]{A thread transitions to the waiting state when it is waiting for another thread to perform a task. It will transition back to the runnable state when the thread on which it's waiting signals that it may continue execution.}
-  		\item[timed waiting]{Threads may also be instructed to wait for a specific interval of time. They will transition back to the runnable state when the time limit elapses.}
-  		\item[terminated]{Threads terminate when they have completed their task.}
-  	\end{description}
+	In a multi-threaded Java program, a thread may, at any time, be in one of the following states:
+	\begin{description}
+		\item[new]{Also known as ``born''. Threads are created in this state, and they remain in it until the program starts them.}
+		\item[runnable]{After a thread has been started, it becomes runnable. Runnable threads are considered to be executing their tasks.}
+		\item[waiting]{A thread transitions to the waiting state when it is waiting for another thread to perform a task. It will transition back to the runnable state when the thread on which it's waiting signals that it may continue execution.}
+		\item[timed waiting]{Threads may also be instructed to wait for a specific interval of time. They will transition back to the runnable state when the time limit elapses.}
+		\item[terminated]{Threads terminate when they have completed their task.}
+	\end{description}
 
-  	Threads may also be assigned priorities, ranging from \texttt{MIN\_PRIORITY}, or 1, and \allowbreak\texttt{MAX\_PRIORITY}, or 5. Threads without specified priorities are given the default, \allowbrek\texttt{NORM\_PRIORITY}, or 3. Threads with higher priority values are allocated processor time before lower-priority threads, but priority is nondeterministic and will not guarantee that threads will execute in a specific order. 
+	Threads may also be assigned priorities, ranging from \texttt{MIN\_PRIORITY}, or 1, and \allowbreak\texttt{MAX\_PRIORITY}, or 5. Threads without specified priorities are given the default, \allowbreak\texttt{NORM\_PRIORITY}, or the number 3. Threads with higher priority values are allocated processor time before lower-priority threads, but priority is nondeterministic and will not guarantee that threads will execute in a specific order. 
 
-  	Threads may be created either by creating objects that implement the interface \texttt{Runnable}\footnote{The method used by Professor Kapfhammer in \texttt{Consumer.java}}, which defines one method, \texttt{run()}, or by extending the \texttt{Thread} class, which requires overriding the \texttt{run()} method. 
+	Threads may be created either by creating objects that implement the interface \texttt{Runnable}\footnote{The method used by Professor Kapfhammer in \texttt{Consumer.java}}, which defines one method, \texttt{run()}, or by extending the \texttt{Thread} class, which requires overriding the \texttt{run()} method. 
 
   \section{Analysis of the output of defective multi-threaded Java programs}
 
-  	When the \texttt{get()} method in \texttt{CubbyHole} is not synchronized, threads 1, 2, 3, and 4 all throw \allowbreak\texttt{java.lang.IllegalMonitorStateException} at the call to \texttt{Consumer.run()}. When the \texttt{put()} method is not synchronized, thread 0 throws that exception at the call to \texttt{Producer.run()}. When both methods are not synchronized, all five threads throw that exception.
+	When the \texttt{get()} method in \texttt{CubbyHole} is not synchronized, threads 1, 2, 3, and 4 all throw \allowbreak\texttt{java.lang.IllegalMonitorStateException} at the call to \texttt{Consumer.run()}. When the \texttt{put()} method is not synchronized, thread 0 throws that exception at the call to \texttt{Producer.run()}. When both methods are not synchronized, all five threads throw that exception.
 
-  	According to the Java Platform 7 SE, \allowbreak\texttt{IllegalMonitorStateException}s are thrown ``to indicate that a thread has attempted to wait on an object's monitor or to notify other threads waiting on an object's monitor without owning the specified monitor.'' In light of this and our understanding of monitor locks as discussed in Section 1, we can piece an understanding of how this defect functions. If the \texttt{get()} and \texttt{put()} methods are not synchronized, then threads which call them do not gain ownership of a monitor lock over the containing object, in this case, the \texttt{CubbyHole}. If \texttt{put()} is not synchronized, then when the \texttt{Producer}, which in this case is thread 0, attempts to \texttt{put} a value in the \texttt{CubbyHole} without a lock on that object, the call to \texttt{notifyAll()} in the \texttt{put()} method, which, according to the Java documentation, will ``wake all threads that are waiting on this object's monitor''. This method throws \allowbreak\texttt{IllegalMonitorStateException} if it is called by a thread which does not currently own the object's monitor lock. Since the thread does not own the monitor, as \texttt{put()} is not synchronized, it throws the exception. Looking at the stack trace for this exception confirms this explanation for the defect --- the exception is indeed thrown by the call to \texttt{notifyAll()}.
+	According to the Java Platform 7 SE, \allowbreak\texttt{IllegalMonitorStateException}s are thrown ``to indicate that a thread has attempted to wait on an object's monitor or to notify other threads waiting on an object's monitor without owning the specified monitor.'' In light of this and our understanding of monitor locks as discussed in Section 1, we can piece an understanding of how this defect functions. If the \texttt{get()} and \texttt{put()} methods are not synchronized, then threads which call them do not gain ownership of a monitor lock over the containing object, in this case, the \texttt{CubbyHole}. If \texttt{put()} is not synchronized, then when the \texttt{Producer}, which in this case is thread 0, attempts to \texttt{put} a value in the \texttt{CubbyHole} without a lock on that object, the call to \texttt{notifyAll()} in the \texttt{put()} method, which, according to the Java documentation, will ``wake all threads that are waiting on this object's monitor''. This method throws \allowbreak\texttt{IllegalMonitorStateException} if it is called by a thread which does not currently own the object's monitor lock. Since the thread does not own the monitor, as \texttt{put()} is not synchronized, it throws the exception. Looking at the stack trace for this exception confirms this explanation for the defect --- the exception is indeed thrown by the call to \texttt{notifyAll()}.
 
-  	The defect created when \texttt{get()} is not synchronized is very similar: the exception is thrown when a \texttt{Consumer} attempts to \texttt{wait()} for the \texttt{CubbyHole} becomes available. Once again, the Java documentation states that \texttt{wait()} throws an \allowbreak\texttt{IllegalMonitorStateException} ``if the current thread is not the owner of the object's monitor'', and, since \texttt{get()} is no longer synchronized, threads that call it will not own the monitor lock on the \texttt{CubbyHole}.
+	The defect created when \texttt{get()} is not synchronized is very similar: the exception is thrown when a \texttt{Consumer} attempts to \texttt{wait()} for the \texttt{CubbyHole} becomes available. Once again, the Java documentation states that \texttt{wait()} throws an \allowbreak\texttt{IllegalMonitorStateException} ``if the current thread is not the owner of the object's monitor'', and, since \texttt{get()} is no longer synchronized, threads that call it will not own the monitor lock on the \texttt{CubbyHole}.
 
-  	If calls to \texttt{notifyAll()} and \texttt{wait()}, which throw the exception, are removed, the program runs without throwing exceptions. However, it uses massive amounts of CPU time compared to synchronized execution. The cause of this can be determined by running the defective program in verbose mode and analyzing the output. When the program is not synchronized, every time a number is \texttt{put()} into the \texttt{CubbyHole}, each \texttt{Consumer} \texttt{get())}s it a number of times. This is because a lock is no longer enforced on the contents of the \texttt{CubbyHole}, allowing all the producers to access it simultaneously, and resulting in a significant increase in the number of operations the CPU must perform.
+	If calls to \texttt{notifyAll()} and \texttt{wait()}, which throw the exception, are removed, the program runs without throwing exceptions. However, it uses massive amounts of CPU time compared to synchronized execution. The cause of this can be determined by running the defective program in verbose mode and analyzing the output. When the program is not synchronized, every time a number is \texttt{put()} into the \texttt{CubbyHole}, each \texttt{Consumer} \texttt{get())}s it a number of times. This is because a lock is no longer enforced on the contents of the \texttt{CubbyHole}, allowing all the producers to access it simultaneously, and resulting in a significant increase in the number of operations the CPU must perform.
 
-  \section{An experimental study of multi-threaded performance}
+ 	\section{An experimental study of multi-threaded performance}
+ 		\subsection{Methods}
 
-  \appendix
+	 		In order to assess the performance of multi-threaded Java programs, an experiment was conducted in which the \texttt{ProducerConsumerModel.java} program provided by Professor Kapfhammer was run with varying numbers of consumers and data items. Data was collected for four replicates of runs with 2, 4, 6, 8, 10, and 12 consumers and 10, 100, 1000, 3000, 5000, 7000, and 10,000 data items, using the a Python script and the Ant build automation system. Source code for the experiment-automation script is given in Appendix \ref{appendix:experimentsource} and the Ant buildfile in Appendix \ref{appendix:buildfile}.  Each run was profiled using the Python \texttt{timeit} package. Results were analyzed and visualized using an IPython notebook, which can be viewed at \url{http://nbviewer.ipython.org/gist/hawkw/9191019}.
 
-  		\section{Experimental Data}
+ 		\subsection{Results}
 
-  			\csvautotabular{data/means.csv}
+	 		As the number of data items increases, the runtime does as well, appearing to follow a linear relationship as shown in Figure \ref{fig:time/data}. Across runs, the number of consumers was not observed to have a significant impact on the performance of the producer-consumer model, as seen in Figure \ref{fig:time/data}. Performance results from the model were plotted on multiple graphs, as plotting the time/data items relationship for each consumer number would result in an unreadable graph in which all of the trendlines overlap almost perfectly. Furthermore, there is not a great deal of variation in the dataset: as shown in Appendix \ref{appendix:data}, the standard deviation for any given set of replicates is less than 5 seconds, and for most, it is 1 or less.
+				
+				\begin{figure}[H]
+					\centerline{\includegraphics[width=0.95\textwidth]{figures/lmplot.pdf}}
+					\caption{Time versus number of data items.}
+					\label{fig:time/data}
+				\end{figure}
+
+
+ 		\subsection{Analysis \& Discussion}
+
+ 			Figure \ref{fig:time/data} indicates that the runtime of the producer-consumer model appears to increase as a function of the number of data items generated by the producer. This seems obvious -- the more data items that must be exchanged, the longer the model will run. A pairwise correlation plot (Figure \ref{fig:corr}) reinforces this observation: runtime and number of data items appear to be strongly correlated, with a correlation coefficient of 1.
+				 \begin{figure}[H]
+					\centerline{\includegraphics[width=0.70\textwidth]{figures/corrplot.pdf}}
+					\caption{Pairwise correlations in the dataset.}
+					\label{fig:corr}
+				\end{figure}
+
+ 			However, the correlation between these variables is not particularly surprising or even all that interesting. Common sense suggsts that as the number of data items to be exchanged increases, so too does the number of operations which must be conducted, necessitating an increase in runtime, and the data simply confirms this. What is perhaps more interesting is the near-complete lack of correlations between other variables, specifically, runtime and number of consumers. Figures \ref{fig:time/data} and \ref{fig:corr} seem to indicate that the number of consumers does not significantly influence the producer-consumer model's runtime, going against my initial hypothesis that increasing consumers would either increase the model's runtime due to additional overheads related to inter-process communication, or decrease the runtime by sharing the load across multiple processes. In this experiment, neither of those hypotheses appear to be the case.
+
+ 			On the other hand, it's worth noting that the data collected in this experiment does not exhaustively indicate that there is no relationship between the number of consumers and the model's runtime. Running an additional experiment with significantly higher numbers of consumers, such as 25, 50, and 100, might reveal that there is a relationship at very high numbers of processes. Another interesting experiment would involve modifying the experimental source code so that each consumer performs an additional operation on each number it consumes, such as adding a value or squaring the number, or making the consumers store some state, such as the last $n$ numbers they have consumed. Adding state to the consumers would make the context switch between processes more costly, which might result in an increased time overhead for systems with more consumers. The relationship between number of consumers and runtime is certainly an interesting avenue deserving of additional experimentation.
+
+  	\appendix
+
+		\section{Experimental Data}
+		\label{appendix:data}
+
+			\centerline{\csvautotabular{data/means.csv}}
+			\pagebreak
   
-		\section{Experiment Runner Source Code}
+		\section{Source Code}
 
-			\lstinputlisting[style=appendixPy]{experiment.py}
+			\subsection{Experiment Automation Script}
+			\label{appendix:experimentsource}
 
-		\section{Modified Producer-Consumer Model Source Code}
+				\lstinputlisting[style=appendixPy]{lrgexperiment.py}
+
+			\subsection{Experiment Buildfile}
+			\label{appendix:buildfile}
+
+				\lstinputlisting[style=appendixXML]{build.xml}
+
+			\subsection{Modified Producer-Consumer Model Source Code}
+			\label{appendix:modelsource}
 			
-			\subsection{ProducerConsumerModel.java}
+				\subsubsection{ProducerConsumerModel.java}
 
-				\lstinputlisting[style=appendixJava]{src/ProducerConsumerModel.java}
+					\lstinputlisting[style=appendixJava]{src/ProducerConsumerModel.java}
 
-			\subsection{Parameters.java}
+				\subsubsection{Parameters.java}
 
-				\lstinputlisting[style=appendixJava]{src/Parameters.java}
+					\lstinputlisting[style=appendixJava]{src/Parameters.java}
+
 
 \end{document}
