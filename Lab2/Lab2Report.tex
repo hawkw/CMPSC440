@@ -1,26 +1,79 @@
 \documentclass[12pt,a4paper]{article}
-\usepackage{algorithm,algpseudocode}
+
 \usepackage[titletoc]{appendix}
 \usepackage[compatibility=false]{caption}
-\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, color, csvsimple}
+
+\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, csvsimple}
+\usepackage{algorithm,algpseudocode}
+
+\usepackage[backend=biber,style=numeric]{biblatex}
+\DeclareLanguageMapping{american}{american-apa}
+\addbibresource{Lab2.bib}
+
 \setdescription{leftmargin=\parindent,labelindent=\parindent}
 \pdfpxdimen=\dimexpr 1 in/72\relax
-\lstdefinestyle{boxedPy}{
+\lstdefinestyle{appendixPy}{
   belowcaptionskip=1\baselineskip,
   breaklines=true,
-  frame=L,
   xleftmargin=\parindent,
+  xrightmargin=\parindent,
   language=Python,
   showstringspaces=false,
-  basicstyle=\footnotesize\ttfamily,
-  keywordstyle=\bfseries\color,
-  commentstyle=\itshape\color,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
   tabsize=4,
-  numbers=left
 }
+\lstdefinestyle{appendixJava}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{appendixXML}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=XML,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{insetJava}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=tb,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+
 \author{Hawk Weisman\\Allegheny College Dept. of Computer Science}
 \title{\texttt{traverse.py}: Automated Traversal of Filesystems for Data Collection \& Analysis}
 \date{Monday, February 10th, 2014}
+
 \begin{document}
 	\maketitle
 	\tableofcontents
@@ -28,77 +81,93 @@
 		
 		An understanding of filesystem characteristics is key to the successful design and implementation of operating systems. Knowledge of typical filesystem use patterns makes it possible to optimize filesystems to support those patterns. While these systems can be implemented based on projections and conjecture, information collected from real filesystems ``in the wild'' provide a much more accurate picture of filesystem use patterns. However, in order to draw meaningful conclusions from such empirically gathered data, it is necessary to collect samples from a large number of individual machines, across as wide a range of hardware and software environments and use cases as possible. Therefore, instruments for data collection must be as portable and versatile as possible.
 
+		While previous research on filesystem characteristics exists \cite{agrawal2007five,evans2002study,leung2008measurement}, much of this research is localized to specific operating systems \cite{agrawal2007five}, specific locations or institutions \cite{agrawal2007five,evans2002study}, or to specific scales \cite{leung2008measurement}. In \citeyear{clark2004xen}, Clark et al. discussed the need for repeated research and reproducibility in experimental computer science, noting that researchers in computer science frequently report results for software they have implemented \cite{clark2004xen}. Research based on data-collection tools that are open-source, portable and multiplatform, and Internet-based make computer systems studies easily reproducible, improving the scientific rigor of the field. While the study described in this report is small in scope, it could easily grow to arbitrary scales, due primarily to the simplicity and the portability of the methods used for data collection.
+
 	\section{Methods}
-		\subsection{Filesystem Data Collection}
 
-			\subsubsection{Traversal Tool Implementation}
+		\subsection{Traversal Tool Implementation}
 
-				A tool was implemented to collect data on filesystem usage characteristics by automatically traversing filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
-			
-				\alglanguage{pseudocode}
-				\begin{algorithm}
-					\caption{Recursive walk algorithm for filesystem traversal and data collection.}
-					\label{alg:recursivewalk}
-					\begin{algorithmic}[1]
-					\Procedure{traverse}{$directory$}
-				   	\For{$item$ in $directory$}
-				   		\State \Call{stat}{$item$}
-				     	\If{\Call{type}{$item$} is directory}
-				     	\State \Call{traverse}{$item$}
-				     	\EndIf
-				   	\EndFor
-					\EndProcedure
-					\end{algorithmic}
-				\end{algorithm}
+			A tool was implemented to collect data on filesystem usage characteristics by automatically traversing filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
+		
+			\alglanguage{pseudocode}
+			\begin{algorithm}
+				\caption{Recursive walk algorithm for filesystem traversal and data collection.}
+				\label{alg:recursivewalk}
+				\begin{algorithmic}[1]
+				\Procedure{traverse}{$directory$}
+			   	\For{$item$ in $directory$}
+			   		\State \Call{stat}{$item$}
+			     	\If{\Call{type}{$item$} is directory}
+			     	\State \Call{traverse}{$item$}
+			     	\EndIf
+			   	\EndFor
+				\EndProcedure
+				\end{algorithmic}
+			\end{algorithm}
 
-				Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Windows, Mac OS X, and POSIX-compatible Unix operating systems are the primary targets for this study, and the Python 3 interpreter is available on all of those environments. 
+			Python was chosen for implementing the traversal tool for two primary reasons: one, cross-platform compatibility, allowing data to be collectied from a number of operating systems; and two, the availability of powerful statistical analysis and data visualization tools such as \texttt{numpy}, \texttt{scipy}, and \texttt{matplotlib} that allow data to be analyzed at collection time. While Python's interpreted nature may introduce additional delays to the already slow recursive walk algorithm which may take long periods of time to traverse large filesystem trees, performance was not considered as important a design consideration as portability and ease of programming, as the data collection program should not need to be run multiple times. Windows, Mac OS X, and POSIX-compatible Unix operating systems are the primary targets for this study, and the Python 3 interpreter is available on all of those environments. 
 
-				Data was collected using the Python function \texttt{os.stat()}, which wraps the operating system's \texttt{stat} system call. All of the targeted operating systems this syscall, which, given a path, returns specific information on the inode at that path. The POSIX standard, implemented by most Unix operating systems, defines what information this syscall returns, and the Windows \texttt{stat} call conforms to this standard as well. A call to \texttt{stat} returns the following information:
+			Data was collected using the Python function \texttt{os.stat()}, which wraps the operating system's \texttt{stat} system call. All of the targeted operating systems this syscall, which, given a path, returns specific information on the inode at that path. The POSIX standard, implemented by most Unix operating systems, defines what information this syscall returns, and the Windows \texttt{stat} call conforms to this standard as well. A call to \texttt{stat} returns the following information:
 
-				\begin{description}[leftmargin=3cm, style=sameline]
-					\begin{multicols}{2}
-						\item[\texttt{st\_mode}]{protection bits}
-						\item[\texttt{st\_ino}]{inode number}
-						\item[\texttt{st\_dev}]{device}
-						\item[\texttt{st\_uid}]{user ID number of owner}
-						\item[\texttt{st\_gid}]{group ID number of owner}
-						\item[\texttt{st\_size}]{size of file (in bytes)}
-					\end{multicols}
-					\item[\texttt{st\_nlink}]{number of hard links to inode}
-					\item[\texttt{st\_atime}]{timestamp of most recent access}
-					\item[\texttt{st\_mtime}]{timestamp of most recent modification}
-					\item[\texttt{st\_ctime}]{timestamp of most recent metadata change (Unix), or file creation (Windows)}
-				\end{description}
+			\begin{description}[leftmargin=3cm, style=sameline]
+				\begin{multicols}{2}
+					\item[\texttt{st\_mode}]{protection bits}
+					\item[\texttt{st\_ino}]{inode number}
+					\item[\texttt{st\_dev}]{device}
+					\item[\texttt{st\_uid}]{user ID number of owner}
+					\item[\texttt{st\_gid}]{group ID number of owner}
+					\item[\texttt{st\_size}]{size of file (in bytes)}
+				\end{multicols}
+				\item[\texttt{st\_nlink}]{number of hard links to inode}
+				\item[\texttt{st\_atime}]{timestamp of most recent access}
+				\item[\texttt{st\_mtime}]{timestamp of most recent modification}
+				\item[\texttt{st\_ctime}]{timestamp of most recent metadata change (Unix), or file creation (Windows)}
+			\end{description}
 
-				If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
-				A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{ap:traverse}.
+			If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
+			A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{app:traverse}.
 
-			\subsubsection{Data Collection}
+			Due to difficulties involving third-party packages required by \texttt{traverse.py}, a second tool, \texttt{traverselite.py}, was written to be used on machines where \texttt{traverse.py}'s dependencies were unavailable. While \texttt{traverselite.py} did not support the built-in graphing and statistics functions of the original program, it was easier to run, and could be run by users who did not have the privelages to install Python packages, such as the Allegheny College Computer Science Department network, and therefore allowed a much larger sample size. Source code for \texttt{traverselite.py} can be found in Appendix \ref{app:traverselite}.
 
-				Filesystem data was collected 
+		\subsection{Data Collection}
 
-		\subsection{Filesystem Data Analysis}
+			Filesystem data was collected primarily from personal acquaintances of the author. Individuals interested in participating in the study were asked to fork a Git repository (\url{http://github.com/hawkw/traverse}) containing the Python script for data collection and a directory containing comma-separated values files output by that tool, to run the tool, and then to merge their fork with the master repository. The use of a Git repository for distributing the experimental scripts and collecting data made conducting the study very easy, but also limited the study participants to individuals familiar with the use of version-control systems --- in this case, primarily Allegheny College students studying Computer Science. This may have biased the results collected in favour of use patterns common among Computer Science students that may not be as frequent among computer users in general. However, the process of interacting with a Git repository could be automated 
+
+			The data-collection tool also recorded the time at which it was run, the root directory for traversal, the length of time taken by the traversal,  and the self-reported name of the operating system. This information is presented in Appendix \ref{app:data}.
+
+		\subsection{Data Analysis}
+
+			Data was analyzed using the IPython interactive computing environment \cite{PER-GRA:2007}.
+
 			\subsubsection{Data Presentation}
 
-				File size distribution was displayed as a histogram with a logarithmic y-axis.
+				File size distribution was displayed as a histogram with a logarithmic y-axis. THIS IS NOT TRUE REPLACE IT WITH SOMETHING ELSE
+
 	\section{Results}
+
 	\section{Analysis \& Discussion}
-	\appendix
 
-		\section{Data Sources}\label{ap:data}
+	\begin{appendices}
 
-		\begin{tabular}{|l|c|r|}\hline%
-			\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
-			\csvreader[head to column names]{datafiles.csv}{}%
-			{\\\Name & \Platform & \Timestamp}%
-		     \\\hline
+		\section{Data Sources}
+			\label{app:data}
+			\begin{tabular}{|l|c|r|}\hline%
+				\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
+				\csvreader[head to column names]{traverse/data/datafiles.csv}{}%
+				{\\\Name & \Platform & \Timestamp}%
+			     \\\hline
 		   \end{tabular}
 
-		\section{Source Code Listing for \texttt{traverse.py}}\label{ap:traverse}
+		\section{Source Code Listings}
+			\subsection{\texttt{traverse.py} Source Code}
+			\label{app:traverse}
+				\lstinputlisting[style=appendixPy]{"traverse/src/traverse.py"}
 
-			%\lstinputlisting[style=boxedPy]{traverse/src/traverse.py}
+			\subsection{\texttt{traverselite.py} Source Code}
+			\label{app:traverselite}
+				\lstinputlisting[style=appendixPy]{traverse/src/traverselite.py}
 
-		\section{Source Code Listing for \texttt{traverselite.py}}\label{ap:traverselite}
+	\end{appendices}
 
-			%\lstinputlisting[style=boxedPy]{traverse/src/traverselite.py}
+	\printbibliography
 \end{document}
