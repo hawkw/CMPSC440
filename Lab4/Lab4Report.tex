@@ -1,0 +1,153 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{algorithm,algpseudocode}
+\usepackage[titletoc]{appendix}
+\usepackage[compatibility=false]{caption}
+\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins}
+\setdescription{leftmargin=\parindent,labelindent=\parindent}
+\pdfpxdimen=\dimexpr 1 in/72\relax
+\lstdefinestyle{appendixJava}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{log}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  frame=tb,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  showstringspaces=false,
+  basicstyle=\footnotesize\ttfamily,
+  tabsize=4,
+}
+\author{Hawk Weisman\\CMPSC440: Operating Systems}
+\title{Lab 4: A Producer-Consumer Model with Semaphores}
+\date{Monday, February 24th, 2014}
+\begin{document}
+	\maketitle
+	\section{A clear description of the term semaphore, with comments about its historical origins}
+
+		\textit{Semaphores} are integer variables used to control program access to critical regions in parallel programming environments. A semaphore is essentially an integer variable which indicates the availability of a particular resource, and, unlike other integer variables, may only be modified using \textit{atomic actions}. Atomic actions are groupings of operations which appear indivisible from the perspective of other processes --- they will either execute completely without interruption or not at all. By ensuring that the semaphore's status is only updated through atomic actions, race conditions in which two or more processes attempt to update the semaphore's value simultaneously.
+
+		The concept of the semaphore was originally proposed by multiprogramming pioneer Edsger Dijkstra in 1965, and named after the concept of flag semaphores, used for communication between ships and along railway lines prior to the invention of the electrical telegraph. Precisely why Professor Djikstra chose the name ``semaphore'' is unknown, but perhaps he intended to liken the processes in a multi-process system to two ships communicating by means of semaphore, or to reference the use of semaphore in railway signalling to prevent two trains from occupying the same ``critical region'' of track, a mishap which would have fatal consequences. Regardless of the exact analogy which lead Dijkstra to choose the name, the flag semaphore was used to avoid concurrency-related problems prior to the invention of the computer.
+
+		Dijkstra called the two operations which increment and decrement the semaphore \texttt{P()} and \texttt{V()}, standing for the Dutch words \textit{proberen} and \textit{verhogen}, meaning to try or test and to raise or increment, respectively. English-speakers often refer to these operations as \texttt{down()} and \texttt{up()}, which I will use for the remainder of this report, \texttt{wait()} and \texttt{signal()}, or \texttt{acquire()} and \texttt{release()}, used by the Java standard library. 
+
+		A process performing the \texttt{down()} operation on a semaphore checks to see if the semaphore's value is greater than zero, decrementing the semaphore and continuing with operation if it is. If the value in the semaphore is zero, the process goes to sleep without having completed the \texttt{down()}. All of this is done in one atomic operation. Algorithm \ref{alg:down} provides pseudocode for this operation. A process performing the \texttt{up()} operation increments the semaphore, which will wake a process waiting in a \texttt{down()} operation. Pseudocode for the \texttt{up()} operation is given in Algorithm \ref{alg:up}.
+			\alglanguage{pseudocode}
+
+				\begin{algorithm}
+					\caption{Semaphore \texttt{down()} proceedure.}
+					\label{alg:down}
+					\begin{algorithmic}[1]
+				   	\Procedure{down}{semaphore $s$, integer $i$}
+						\Repeat
+							[\Comment{Brackets ([,]) indicate an atomic operation}
+							\If{$s \not= 0$}
+								\State $s \gets s - 1$]
+							\EndIf
+						\Until{$s \not= 0$}
+				   	\EndProcedure
+					\end{algorithmic}
+				\end{algorithm}
+
+				\begin{algorithm}
+					\caption{Semaphore \texttt{up()} proceedure.}
+					\label{alg:up}
+					\begin{algorithmic}[1]
+					\Procedure{up}{semaphore $s$}
+				   		\State [$s \gets s + 1$]\Comment{Brackets ([,]) indicate an atomic operation}		
+				   	\EndProcedure
+				   	\end{algorithmic}
+				\end{algorithm}
+
+		There are two basic kinds of semaphores, \textit{counting semaphores} and \textit{binary semaphores}. The primary difference between these two types of semaphore is the maximum value of the semaphore. A binary semaphore is given a maximum value of 1, and therefore can be used for ensuring the mutual exclusion of a resource. A counting semaphore, in contrast, is given a maximum value $n > 1$, and may be used for counting the number of free resources in a resource pool of size $n$,\footnote{Such as the slots in the bounded buffers in Professor Garg's Java producer-consumer model and the C producer-consumer model presented by Tanenbaum on page 130 of \textit{Modern Operating Systems}} or for ensuring that up to $n$ processes may access a critical region at a time in scenarios where a resource may be accessed by a specific number of processes.
+
+		Semaphore operations may be made atomic in a number of ways, including implementing them as system calls where the operating system disables interrupts while semaphore operations are executed, or by using language constructs such as Java's \allowbreak\texttt{synchronized}, as Professor Garg does in his producer-consumer implementation.
+ 
+	\section{A revised and extended implementation of the \allowbreak producer-consumer model}
+
+		The producer-consumer model implemented by Professor Vijay K. Garg in the book \textit{Concurrent and Distributed Computing in Java} was modified in two key ways to facilitate exploration of the semaphore concept. The \texttt{JCommander} framework was used to add a command-line interface allowing the user to control a number of factors relating to the execution of the model, such as enabling and disabling debug logging, setting varying numbers of consumers and a maximum number data items produced, and disabling the \texttt{P()} and \texttt{V()} operations in order to observe the output of a defective program.
+
+		Implementing these enhancements required modification to the \texttt{BoundedBuffer} and \texttt{ProducerConsumer} classes in Professor Garg's producer-consumer implementation, the modified versions of which which I have included in Appendix \ref{ap:source}. Since modifications to the other classes in Professor Garg's implementation were not necessary, I have opted not to include source code for those classes.
+
+	\section{A comprehensive analysis of the output of each defective multi-threaded Java program}
+
+		Purposefully ``breaking'' a program in various ways is one of the best ways to understand the defects that can lead to incorrect execution. Therefore, functionality was added to Professor Garg's producer-consumer model allowing the semaphore's \texttt{P()} and \texttt{V()} operations in the bounded buffer's \texttt{deposit()} and \texttt{fetch()} methods to be systematically disabled through command-line arguments.
+
+		Running the producer-consumer model with the semaphore \texttt{P()} operation disabled produces output like that in Listing \ref{lst:nop}:
+		\begin{lstlisting}[style=log,caption=Output from a defective program with the \texttt{P()} operation disabled., label=lst:nop]
+  [Producer@63b34ca Thread-0] produced item 0.8366879703636007
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Producer@63b34ca Thread-0] produced item 0.6723684834619789
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Producer@63b34ca Thread-0] produced item 0.443455482664727
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.8366879703636007
+  [Consumer@5521f4ef Thread-1] fetched item 0.6723684834619789
+  [Producer@63b34ca Thread-0] produced item 0.377845672743375
+  [Consumer@5521f4ef Thread-1] fetched item 0.443455482664727
+  [Consumer@5521f4ef Thread-1] fetched item 0.377845672743375
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Producer@63b34ca Thread-0] produced item 0.8589306550280019
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+  [Producer@63b34ca Thread-0] produced item 0.30101538417293017
+  [Consumer@5521f4ef Thread-1] fetched item 0.8366879703636007
+  [Consumer@5521f4ef Thread-1] fetched item 0.6723684834619789
+  [Consumer@5521f4ef Thread-1] fetched item 0.443455482664727
+  [Consumer@5521f4ef Thread-1] fetched item 0.377845672743375
+  [Producer@63b34ca Thread-0] produced item 0.7202959599710409
+  [Consumer@5521f4ef Thread-1] fetched item 0.8589306550280019
+  [Consumer@5521f4ef Thread-1] fetched item 0.30101538417293017
+  [Consumer@5521f4ef Thread-1] fetched item 0.7202959599710409
+  [Consumer@5521f4ef Thread-1] fetched item 0.0
+		\end{lstlisting}
+
+		While we generally expect to see the consumer access the buffer a number of times equal to the number of times the producer puts items into the buffer, in Listing \ref{lst:nop} we see the consumer remove items from the buffer significantly more times than the producer places new numbers into the buffer. This is because the bounded buffer's \texttt{deposit()} method no longer ensures mutual exclusion, due to the removal of the \texttt{P()} operation. Because the producer no longer calls \texttt{P()} on the \texttt{mutex} semaphore prior to depositing items into the buffer, the consumers may access the buffer during the \texttt{deposit()} operation. Furthermore, we are no longer performing the \texttt{P()} operation on the counting semaphore \texttt{isFull}, which records which positions in the buffer are full and which are empty. This means that the consumers will attempt to fetch from positions in the buffer which do not contain values, resulting in consumers repeatedly fetching zeros.
+
+		When the \texttt{V()} operations in \texttt{deposit()} is disabled, we see output like that given in Listing \ref{lst:nov}, after which the program continues to run but produces no further debug messages, appearing to be stuck in an infinite loop.
+
+		\begin{lstlisting}[style=log, caption=Output from a defective program with the \texttt{V()} operation disabled.,label=lst:nov]
+[Producer@74d4db38 Thread-0] produced item 0.8744626965619559
+[CountingSemaphore@21c75cff Thread-1] waiting
+[Producer@74d4db38 Thread-0] produced item 0.2900022056717859
+[BinarySemaphore@1d82752b Thread-0] waiting
+		\end{lstlisting}
+
+		When the calls to \texttt{V()} in the \texttt{deposit()} method are disabled, the program enters a \textit{livelock}, a scenario in which two processes constantly change state but neither progress. Because the producer fails to update the semaphore to reflect the fact that there are new values available in the bounded buffer, the consumer will continue to loop in \texttt{P()}, endlessly waiting to be notified that new values are available.
+
+	\section{A reflection of the characteristics of the two different producer-consumer models}
+
+		The producer-consumer model used in Lab 3, implemented by Professor Kafphammer, and Professor Garg's producer-consumer model used in this lab, differ in a number of interesting ways. Obvious differences include that Professor Kapfhammer's implementation supports multiple consumers and a set limit of data items ``out of the box'', while Professor Garg's does not support these features, only having one consumer and continuing to run endlessly. Professor Kapfhammer's implementation uses a single-value buffer (the \texttt{CubbyHole} class), while Professor Garg's has a \texttt{BoundedBuffer} class capable of containing up to ten items. Furthermore, there are some interesting details related to implementation, such as Professor Garg's use of a \texttt{Symbols} class which seems to play a role roughly equivalent to a C header files. 
+
+		However, the most significant difference is that the two models utilize different strategies for ensuring mutual exclusion. Professor Kapfhammer's uses the Java \texttt{synchronized} keyword's monitor lock implementation, while Professor Garg's makes use of semaphores. Both of these strategies are successful in ensuring mutual exclusion --- they both ensure mutual exclusion on the critical reason for any number consumers. The primary differences are that Professor Kapfhammer's solution is simple and therefore arguably more elegant, while implementations like Professor Garg's may be used in environments where monitor locks are unavailable, such as C. The semaphore-based solution may also be thought of as a lower-level solution, since a semaphore is essentially a single variable, while the monitor lock is an object. While Professor Garg's implementation uses the Java \texttt{synchronized} keyword to ensure that his semaphore's \texttt{P()} and \texttt{V()} operations are atomic, their atomicity can be ensured using other methods as well, allowing semaphores to be used in languages which do not provide a synchronized keyword.
+
+  	\appendix
+  		\section{Modified Producer-Consumer Model Source Code}
+  			\label{ap:source}
+  			\subsection{ProducerConsumer.java}
+  				\lstinputlisting[style=appendixJava]{src/ProducerConsumer.java}
+  			\subsection{BoundedBuffer.java}
+  				\lstinputlisting[style=appendixJava]{src/BoundedBuffer.java}
+
+\end{document}
