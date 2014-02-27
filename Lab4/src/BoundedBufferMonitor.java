@@ -2,6 +2,7 @@ class BoundedBufferMonitor {
     final int sizeBuf = 10;
     double[] buffer = new double[sizeBuf];
     int inBuf = 0, outBuf = 0, count = 0;
+
     public synchronized void deposit(double value) {
         while (count == sizeBuf) // buffer full
             Util.myWait(this);

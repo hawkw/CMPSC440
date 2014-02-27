@@ -11,7 +11,8 @@ public class Util {
         }
     }
     public static void myWait(Object obj) {
-        println("waiting");
+        if(ProducerConsumer.isVerbose())
+            System.out.printf("[Verbose] [%s %s] waiting\n", obj.toString(), Thread.currentThread().getName());
         try {
             obj.wait();
         } catch (InterruptedException e) {
