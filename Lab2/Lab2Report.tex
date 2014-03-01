@@ -121,27 +121,25 @@
 				\item[\texttt{st\_nlink}]{number of hard links to inode}
 				\item[\texttt{st\_atime}]{timestamp of most recent access}
 				\item[\texttt{st\_mtime}]{timestamp of most recent modification}
-				\item[\texttt{st\_ctime}]{timestamp of most recent metadata change (Unix), or file creation (Windows)}
+				\item[\texttt{st\_ctime}]{timestamp of most recent metadata change (Unix), or file creation \allowbreak(Windows)}
 			\end{description}
 
-			If information was collected using separate calls to functions such as \texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
+			If information was collected using separate calls to functions such as \\\texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
 			A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{app:traverse}.
 
 			Due to difficulties involving third-party packages required by \texttt{traverse.py}, a second tool, \texttt{traverselite.py}, was written to be used on machines where \texttt{traverse.py}'s dependencies were unavailable. While \texttt{traverselite.py} did not support the built-in graphing and statistics functions of the original program, it was easier to run, and could be run by users who did not have the privelages to install Python packages, such as the Allegheny College Computer Science Department network, and therefore allowed a much larger sample size. Source code for \texttt{traverselite.py} can be found in Appendix \ref{app:traverselite}.
 
 		\subsection{Data Collection}
 
-			Filesystem data was collected primarily from personal acquaintances of the author. Individuals interested in participating in the study were asked to fork a Git repository (\url{http://github.com/hawkw/traverse}) containing the Python script for data collection and a directory containing comma-separated values files output by that tool, to run the tool, and then to merge their fork with the master repository. The use of a Git repository for distributing the experimental scripts and collecting data made conducting the study very easy, but also limited the study participants to individuals familiar with the use of version-control systems --- in this case, primarily Allegheny College students studying Computer Science. This may have biased the results collected in favour of use patterns common among Computer Science students that may not be as frequent among computer users in general. However, the process of interacting with a Git repository could be automated 
+			Filesystem data was collected primarily from personal acquaintances of the author. Individuals interested in participating in the study were asked to fork a Git repository (\url{http://github.com/hawkw/traverse}) containing the Python script for data collection and a directory containing comma-separated values files output by that tool, to run the tool, and then to merge their fork with the master repository. Due to the size of some datasets, the output comma-separated values files were compressed using the Python standard library's built-in bzip2 compression.
 
-			The data-collection tool also recorded the time at which it was run, the root directory for traversal, the length of time taken by the traversal,  and the self-reported name of the operating system. This information is presented in Appendix \ref{app:data}.
+			The use of a Git repository for distributing the experimental scripts and collecting data made conducting the study very easy, but also limited the study participants to individuals familiar with the use of version-control systems --- in this case, primarily Allegheny College students studying Computer Science. This may have biased the results collected in favour of use patterns common among Computer Science students that may not be as frequent among computer users in general. However, the process of interacting with a Git repository could be automated 
 
-		\subsection{Data Analysis}
+			The data-collection tool also recorded the time at which it was run, the root directory for traversal, the length of time taken by the traversal,  and the self-reported name of the operating system in a separate comma-separated values file in the data directory. This information is presented in Appendix \ref{app:data}.
 
-			Data was analyzed using the IPython interactive computing environment \cite{PER-GRA:2007}.
+		\subsection{Data Analysis \& Presentation}
 
-			\subsubsection{Data Presentation}
-
-				File size distribution was displayed as a histogram with a logarithmic y-axis. THIS IS NOT TRUE REPLACE IT WITH SOMETHING ELSE
+			Data was analyzed using the IPython interactive computing environment \cite{ipython}. The Pandas and Matplotlib libraries \cite{pandas,matplotlib} were used for statistical analysis and visualization, respectively. Comma-separated values containing collected data were accessed from the Git repository using the metadata CSV file, with a known static URL, to retrieve the URLs of other data files.
 
 	\section{Results}
 
@@ -153,7 +151,7 @@
 			\label{app:data}
 			\begin{tabular}{|l|c|r|}\hline%
 				\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
-				\csvreader[head to column names]{traverse/data/datafiles.csv}{}%
+				\csvreader[head to column names]{datafiles.csv}{}%
 				{\\\Name & \Platform & \Timestamp}%
 			     \\\hline
 		   \end{tabular}
@@ -169,5 +167,7 @@
 
 	\end{appendices}
 
+	\clearpage
+	\addcontentsline{toc}{section}{References}
 	\printbibliography
 \end{document}
