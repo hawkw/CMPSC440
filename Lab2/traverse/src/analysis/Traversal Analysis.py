@@ -34,14 +34,11 @@ for filename in csvData['Filename']:
         try:
             data = bz2.decompress(response)
             datafiles[filename] = pandas.read_csv(io.BytesIO(data))
-            print("Successfully decompressed" + filename)
+            print("Successfully decompressed " + filename)
         except Exception as e:
             print("Caught error \"{0}\" at {1}".format(e,url))
+            print(e)
     
-
-# <codecell>
-
-print (csvData)
 
 # <codecell>
 
@@ -60,8 +57,10 @@ ubuntus = csvData[csvData['Platform'] == 'linux2']
 
 # <codecell>
 
+# set up the environment for plotting
 from scipy import stats
 from pylab import *
+from matplotlib import ticker
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -69,97 +68,180 @@ import seaborn as sns
 
 %matplotlib inline
 
-# make distribution plots for filesize on OSX and Ubuntu (matplotlib style)
-bins = 10
-rcParams['figure.figsize'] = 10, 8
+# we're outputting PDF figures to my CS440 dir
+figpath = "/Users/hawk/Documents/DOCUMENTS/School/2014S/CMPSC440/Lab2/figures/"
 
+# <codecell>
+
+mac_sizes = []
+ubuntu_sizes = []
+    
 for key, value in datafiles.items():
     if key in list(macs['Filename']):
-        plt.hist([size for size in value['st_size'] if size > 1], bins, normed=True, log=True, alpha=.5, label=key);
-        
-plt.xlabel('File size')
-plt.ylabel('Frequency (logarithmic)')
-plt.title('Distribution of file sizes on Mac OS X')
-plt.show()
-
-for key, value in datafiles.items():
-    if key in list(ubuntus['Filename']):
-        plt.hist([size for size in value['st_size'] if size > 1], bins, normed=True, log=True, alpha=.5, label=key);
-        
-plt.xlabel('File size')
-plt.ylabel('Frequency (logarithmic)')
-plt.title('Distribution of file sizes on Ubuntu')
-plt.show()
-
-
-# <codecell>
-
-# try and draw Seaborn KDE plots
-
+        for size in value['st_size']:
+            if size > 1:
+                mac_sizes.append(size)
+    elif key in list(ubuntus['Filename']):
+        for size in value['st_size']:
+            if size > 1:
+                ubuntu_sizes.append(size)
+                
 with sns.palette_context("husl"):
+    # Draw histograms for file size
+    plt.figure(1, figsize=(10,10))
     
-    f, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 20), sharex=False)
+    bins = 75
+    plt.subplot(211)
+    plt.title('Total distribution of file sizes on Ubuntu & Mac OS X')
+    plt.ylabel('Frequency (logarithmic)')
+    plt.hist(mac_sizes, normed=True, bins=bins, log = True, alpha=.5, color="#6495ED", label='Mac OS X')
+    plt.subplot(212)
+    plt.hist(ubuntu_sizes, normed=True, bins=bins, log = True, alpha=.5, color="#F08080", label='Ubuntu');
+    plt.ylabel('Frequency (logarithmic)')
+    plt.xlabel('File size (kilobytes)')
+    plt.legend()
+    plt.savefig(figpath + 'size_hist.pdf')
+    plt.show()
     
-    for key, value in datafiles.items():
-        if key in list(macs['Filename']):
-            path = key.replace('-', '/').split('.')[0]
-            ax1 = sns.kdeplot(double([size for size in value['st_size'] if size > 1]), shade=True, label=path, legend=True, ax=ax1)
+    # Draw histograms + KDE plots
+    plt.figure(2, figsize=(10,10))
     
-    ax1.set_xscale('log')
-            
-    for key, value in datafiles.items():
-        if key in list(ubuntus['Filename']):
-            path = key.replace('-', '/').split('.')[0]
-            ax2 =  sns.kdeplot(double([size for size in value['st_size'] if size > 1]), shade=True, label=path, legend=True, ax=ax2)
+    bins = 25 # 75 bins is too many bins when we aren't on a log axis
+    plt.subplot(211)
+    plt.hist(mac_sizes, bins=bins, normed=True, alpha=.5, color="#6495ED")
+    sns.kdeplot(double(mac_sizes), label="Gaussian KDE", legend=True)
+    plt.title("Distribution of file size (Mac OS X)")
     
-    ax2.set_xscale('log')
-    
+    plt.subplot(212)
+    plt.hist(ubuntu_sizes, bins=bins, normed=True, alpha=.5, color="#F08080");
+    sns.kdeplot(double(ubuntu_sizes), label="Gaussian KDE", legend=True)
+    plt.title("Distribution of file size (Ubuntu)")
+    plt.savefig(figpath + 'size_os-dist.pdf')
     plt.show()
 
 # <codecell>
 
-# try and draw Seaborn distplot plots
-
-with sns.palette_context("husl"):
-    for key, value in datafiles.items():
-        if key in list(macs['Filename']):
-            ax = sns.distplot(double([size for size in value['st_size'] if size > 1]))
-    ax=ax.set_yscale('log')
-    plt.show()
-            
-with sns.palette_context("husl"):
-    for key, value in datafiles.items():
-        if key in list(ubuntus['Filename']):
-           ax = sns.distplot(double([size for size in value['st_size'] if size > 1]))
-    ax=ax.set_yscale('log')
-    plt.show()
-
-# <codecell>
-
-# make distribution plots for link density on OSX and Ubuntu (matplotlib style)
-bins = 10
-
+mac_nlink = []
+ubuntu_nlink = []
+    
 for key, value in datafiles.items():
     if key in list(macs['Filename']):
-        plt.hist([nlink for nlink in value['st_nlink'] if nlink > 1], bins, normed=True, log=True, alpha=.5);
-        
-plt.xlabel('inode link count')
-plt.ylabel('Frequency (logarithmic)')
-plt.title('Distribution of inode link density on Mac OS X')
-plt.show()
+        for nlink in value['st_nlink']:
+            if nlink > 1:
+                mac_nlink.append(nlink)
+    elif key in list(ubuntus['Filename']):
+        for nlink in value['st_nlink']:
+            if nlink > 1:
+                ubuntu_nlink.append(nlink)
+                
+with sns.palette_context("husl"):
+    # Draw histograms for link density
+    plt.figure(3, figsize=(10,10))
+    
+    bins = 75
+    plt.subplot(211)
+    plt.title('Total distribution of link density on Ubuntu & Mac OS X')
+    plt.ylabel('Frequency (logarithmic)')
+    plt.hist(mac_nlink, normed=True, bins=bins, log = True, alpha=.5, color="#6495ED", label='Mac OS X')
+    plt.subplot(212)
+    plt.hist(ubuntu_nlink, normed=True, bins=bins, log = True, alpha=.5, color="#F08080", label='Ubuntu');
+    plt.ylabel('Frequency (logarithmic)')
+    plt.xlabel('Number of links')
+    plt.legend()
+    plt.savefig(figpath + 'nlink_hist.pdf')
+    plt.show()
+    
+    # Draw histograms + KDE plots
+    plt.figure(4, figsize=(10,10))
+    
+    bins = 25 # 75 bins is too many bins when we aren't on a log axis
+    plt.subplot(211)
+    ax = plt.hist(mac_nlink, normed=True, bins=bins, alpha=.5, color="#6495ED", histtype="stepfilled")
+    ax = sns.kdeplot(double(mac_nlink), label="Gaussian KDE", legend=True)
+    plt.title("Distribution of nlink density (Mac OS X)")
+    
+    plt.subplot(212)
+    plt.hist(ubuntu_nlink, normed=True, bins=bins, alpha=.5, color="#F08080", histtype="stepfilled");
+    sns.kdeplot(double(ubuntu_nlink), label="Gaussian KDE", legend=True)
+    plt.title("Distribution of nlink density (Ubuntu)")
+    plt.savefig(figpath + 'nlink_dist.pdf')
+    plt.show()
 
-for key, value in datafiles.items():
-    if key in list(ubuntus['Filename']):
-        plt.hist([nlink for nlink in value['st_nlink'] if nlink > 1], bins, normed=True, log=True, alpha=.5);
-        
-plt.xlabel('inode link count')
-plt.ylabel('Frequency (logarithmic)')
-plt.title('Distribution of inode link density on Ubuntu')
+# <markdowncell>
+
+# Hunt for correlations
+# =====================
+# 
+# Now that we've got our dataset and we've looked at it's the density and distribution, it's time to actually start doing science. We're going to do this by looking for correlations between the variables we measured in the study (i.e. everything that's returned from a syscall to `stat()`) and a few computed variables, such as file age, that we can compute from the data we've collected. 
+# 
+# We'll start by using the `corrplot()` function from Seaborn to draw a heatmap showing us which pairwise interactions between variables are the most strongly correlated. We can use the heatmap to "target" interactions between variables for further investigation: we'll look at regressions between the variables which are the most strongly correlated.
+
+# <codecell>
+
+#we're gonna start merging some dataframes to make a master corrplot
+def merge_dataframes(frames):
+    """Merges a dict of dataframes and drops the 'path' column"""
+    return pandas.concat(frames).drop(['path'], 1)
+
+# merge the master dataframe, the macs, and the ubuntus
+macs_dict = dict((key, value) for (key, value) in datafiles.items() if key in list(macs['Filename']))
+ubuntus_dict = dict((key, value) for (key, value) in datafiles.items() if key in list(ubuntus['Filename']))
+
+merged_macs    = merge_dataframes(macs_dict)
+merged_ubuntus = merge_dataframes(ubuntus_dict)
+merged_master  = merge_dataframes(datafiles)
+
+# print the merged dataframes (to check if it worked correctly)
+print merged_macs
+print merged_ubuntus
+print merged_master
+
+# <codecell>
+
+#now make a "master" correlation plot
+plt.figure(4, figsize=(10,10))
+sns.corrplot(merged_master)
+plt.title("Pairwise Correlations")
+plt.savefig(figpath + 'corrplot-master.pdf')
 plt.show()
 
 # <codecell>
 
-# plot traversal times
-plt.hist(csvData['Traversal Time'])
+# make corrplots for the single-os dataframes as well
+plt.figure(5, figsize=(10,10))
+sns.corrplot(merged_macs)
+plt.title("Pairwise Correlations (Mac OS X)")
+plt.savefig(figpath + 'corrplot-mac.pdf')
 plt.show()
+
+plt.figure(6, figsize=(10,10))
+sns.corrplot(merged_ubuntus)
+plt.title("Pairwise Correlations (Ubuntu)")
+plt.savefig(figpath + 'corrplot-ubuntu.pdf')
+plt.show()
+
+# <codecell>
+
+# try plotting the "hottest" pairwise regressions
+sns.lmplot(merged_macs['Users-Owner_2014-02-05.csv.bz2'], x='st_ino', y='st_gid')
+
+# <markdowncell>
+
+# Make "metrics tables"
+# ---------------------
+# 
+# We're gonna try and make a table showing mean size values.
+
+# <codecell>
+
+print("Mac OS X--------")
+print(merged_macs['st_size'].describe())
+print("Ubuntu--------")
+print(merged_ubuntus['st_size'].describe())
+print("Total--------")
+print(merged_master['st_size'].describe())
+
+# <codecell>
+
+print (merged_master['st_size'])
 
