@@ -114,3 +114,5 @@ eclim/.eclimrc_k
 *.jar
 *.war
 *.ear
+
+*.bcf
