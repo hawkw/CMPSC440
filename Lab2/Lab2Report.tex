@@ -1,12 +1,16 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[12pt,letterpaper]{article}
 
 \usepackage[titletoc]{appendix}
 \usepackage[compatibility=false]{caption}
 
-\usepackage{fullpage, listings, footnote, graphicx, hyperref, multicol, enumitem, latexsym, placeins, csvsimple}
+\usepackage{fullpage, listings, footnote, graphicx, multicol, enumitem, latexsym, placeins, csvsimple}
 \usepackage{algorithm,algpseudocode}
 
 \usepackage[backend=biber,style=numeric]{biblatex}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+
 \DeclareLanguageMapping{american}{american-apa}
 \addbibresource{Lab2.bib}
 
@@ -87,7 +91,7 @@
 
 		\subsection{Traversal Tool Implementation}
 
-			A tool was implemented to collect data on filesystem usage characteristics by automatically traversing filesystems using the recursive walk algorithm given in Algorithm \ref{alg:recursivewalk}.
+			A tool was implemented to collect data on filesystem usage characteristics by automatically traversing filesystems using the recursive walk algorithm given in \cref{alg:recursivewalk}.
 		
 			\alglanguage{pseudocode}
 			\begin{algorithm}
@@ -125,9 +129,9 @@
 			\end{description}
 
 			If information was collected using separate calls to functions such as \\\texttt{os.path.getsize()}, it would be necessary for the program to perform multiple system calls, and therefore, multiple disk access operations, increasing data collection time. 
-			A complete listing of the source code for \texttt{traverse.py} is available in Appendix \ref{app:traverse}.
+			A complete listing of the source code for \texttt{traverse.py} is available in \cref{app:traverse}.
 
-			Due to difficulties involving third-party packages required by \texttt{traverse.py}, a second tool, \texttt{traverselite.py}, was written to be used on machines where \texttt{traverse.py}'s dependencies were unavailable. While \texttt{traverselite.py} did not support the built-in graphing and statistics functions of the original program, it was easier to run, and could be run by users who did not have the privelages to install Python packages, such as the Allegheny College Computer Science Department network, and therefore allowed a much larger sample size. Source code for \texttt{traverselite.py} can be found in Appendix \ref{app:traverselite}.
+			Due to difficulties involving third-party packages required by \texttt{traverse.py}, a second tool, \texttt{traverselite.py}, was written to be used on machines where \texttt{traverse.py}'s dependencies were unavailable. While \texttt{traverselite.py} did not support the built-in graphing and statistics functions of the original program, it was easier to run, and could be run by users who did not have the privelages to install Python packages, such as the Allegheny College Computer Science Department network, and therefore allowed a much larger sample size. Source code for \texttt{traverselite.py} can be found in \cref{app:traverselite}.
 
 		\subsection{Data Collection}
 
@@ -135,34 +139,160 @@
 
 			The use of a Git repository for distributing the experimental scripts and collecting data made conducting the study very easy, but also limited the study participants to individuals familiar with the use of version-control systems --- in this case, primarily Allegheny College students studying Computer Science. This may have biased the results collected in favour of use patterns common among Computer Science students that may not be as frequent among computer users in general. However, the process of interacting with a Git repository could be automated 
 
-			The data-collection tool also recorded the time at which it was run, the root directory for traversal, the length of time taken by the traversal,  and the self-reported name of the operating system in a separate comma-separated values file in the data directory. This information is presented in Appendix \ref{app:data}.
+			The data-collection tool also recorded the time at which it was run, the root directory for traversal, the length of time taken by the traversal,  and the self-reported name of the operating system in a separate comma-separated values file in the data directory. This information is presented in \cref{app:data}.
 
 		\subsection{Data Analysis \& Presentation}
 
-			Data was analyzed using the IPython interactive computing environment \cite{ipython}. The Pandas and Matplotlib libraries \cite{pandas,matplotlib} were used for statistical analysis and visualization, respectively. Comma-separated values containing collected data were accessed from the Git repository using the metadata CSV file, with a known static URL, to retrieve the URLs of other data files.
+			Data was analyzed using the IPython interactive computing environment \cite{ipython}. The Pandas and Matplotlib libraries \cite{pandas,matplotlib} were used for statistical analysis and visualization, respectively. Comma-separated values containing collected data were accessed from the Git repository using the metadata CSV file, with a known static URL, to retrieve the URLs of other data files. After retrieval, the data files were parsed into Pandas DataFrames for analysis and graphing. A static copy of the IPython notebook used for data analysis may be viewed at \allowbreak\url{http://nbviewer.ipython.org/gist/hawkw/8906418}.
+
+			Logarithmic histograms were produced for file size and link count, showing the distribution across all operating systems (\cref{fig:size_hist,fig:nlink_hist}) and for individual operating systems (\cref{fig:size_mac-hist,fig:size_ubuntu-hist,fig:nlink_mac-hist,fig:nlink_ubuntu-hist}). Items of size zero (directories) were excluded from plots of file size distribution for two reasons: one, that they are not technically files, and two, that they would bias histograms to the extent that the distribution pattern would be difficult to discern.
+
+			Histograms were also prepared for measurements of file path depth, which was measured by counting the number of path separator characters\footnote{\texttt{/} on Mac OS X and Ubuntu} in the path to each object found, with \cref{fig:depth} showing depth for the entire dataset, and \cref{fig:mac-depth,fig:ubuntu-depth}  showing depth for Mac OS X and Ubuntu. Three pairwise correlation plots were drawn: one of the entire dataset (\cref{fig:corrplot}), and one for each of the operating systems from which data was collected (\cref{fig:corrplot-mac,fig:corrplot-ubuntu}).
 
 	\section{Results}
+
+		Data was collected on a total of 1,232,894 filesystem objects. 956,880 of these were recorded from computers running Mac OS X, and 276,014 were recorded from machines running Ubuntu Linux.
+
+		\Cref{table:size} shows the mean, minimum, and maximum file size recorded across multiple operating systems. For all operating systems, the smallest items encountered were zero bytes. These items are assumed to be directories.in size. A maximum file size of 1.76639 GB was observed on Mac OS X, and 11.7309 GB on Unbuntu.  The mean observed file size was 273.877 kB on Mac OS X, 469.0964 kB on Ubuntu, and 317.5818 kB across all observed computers. A standard deviation of 4.500786 MB was observed on Mac OS X, 28.4256 MB on Ubuntu, and 14.0222 MB across all operating systems.
+
+		\Cref{fig:size_hist,fig:size_mac-hist,fig:size_ubuntu-hist} show the distribution of file sizes observed, plotted on a logarithmic axis. A majority of filesystem items observed fell into the smallest bin, even with 0-byte items (directories) excluded.
+
+		\begin{table}[h]
+		\caption{Size of filesystem items}
+		\label{table:size}
+			\begin{tabular}{l r r r r}
+			Operating System & mean  & standard dev & minimum & maximum \\
+			\hline
+			Mac OS X & 273.877 kB & 4.500786 MB & 0 B & 1.76639 GB \\
+			Ubuntu & 469.0964 kB & 28.4256 MB & 0 B & 11.7309 GB \\
+			Total  & 317.5818 kB & 14.0222 MB & 0 B & 11.7309 GB \\
+			\end{tabular}
+		\end{table}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/size_hist.pdf}}
+			\caption{Logarithmic histogram of file size distribution.}
+			\label{fig:size_hist}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/size_mac-hist.pdf}}
+			\caption{Logarithmic histogram of file size distribution on Mac OS X.}
+			\label{fig:size_mac-hist}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/size_ubuntu-hist.pdf}}
+			\caption{Logarithmic histogram of file size distribution on Ubuntu.}
+			\label{fig:size_ubuntu-hist}
+		\end{figure}
+
+		\Cref{table:nlink} shows the mean, standard deviation, and minimum and maximum link counts observed on Mac OS X, Ubuntu, and across both operating systems. The mean number of links on Ubuntu was 1.429467, while the mean number of links on Mac OS X was 2.152924. However, the standard deviation in link count observed Mac OS X, 35.360418 links, is over a power of ten greater than the standard deviation observed on Ubuntu, 3.559488 links. Furthermore, the most linked item on Mac OS X had 26,760 links, while the most linked item observed on machines running Ubuntu had only 474 links.
+
+		\begin{table}[h]
+		\caption{Link density of filesystem items}
+		\label{table:nlink}
+			\begin{tabular}{l r r r r}
+			Operating System & mean  & standard dev & minimum & maximum \\
+			\hline
+			Mac OS X & 2.152924 links & 35.360418 links & 1 link & 26,760 links \\
+			Ubuntu &  1.429467 links & 3.559488 links & 1 link & 474 links \\
+			Total & 1.990960 links & 31.198756 links & 1 link & 26,760 links \\
+			\end{tabular}
+		\end{table}
+
+		\Cref{fig:nlink_mac-hist,fig:nlink_ubuntu-hist} show logarithmic histograms for link count density on Mac OS X and Ubuntu, while \cref{fig:nlink_hist} shows a histogram for both operating systems.
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/nlink_hist.pdf}}
+			\caption{Logarithmic histogram of link count distribution.}
+			\label{fig:nlink_hist}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/nlink_mac-hist.pdf}}
+			\caption{Logarithmic histograms of link count distribution on Mac OS X.}
+			\label{fig:nlink_mac-hist}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/nlink_ubuntu-hist.pdf}}
+			\caption{Logarithmic histograms of link count distribution on Ubuntu.}
+			\label{fig:nlink_ubuntu-hist}
+		\end{figure}
+
+
+		\begin{table}[h]
+		\caption{Depth of filesystem items}
+		\label{table:depth}
+			\begin{tabular}{l r r r r}
+			Operating System & mean  & standard dev & minimum & maximum \\
+			\hline
+			Mac OS X & 11.92237 & 3.304652 & 3  & 26 \\
+			Ubuntu &  10.18107 & 3.283197 & 3 & 21 \\
+			Total & 11.53254 & 3.378747 & 3 & 26 \\
+			\end{tabular}
+		\end{table}
+
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/depth_hist.pdf}}
+			\caption{Histogram of file path depth.}
+			\label{fig:depth}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/depth_mac-hist.pdf}}
+			\caption{Histogram of file path depth on Mac OS X.}
+			\label{fig:mac-depth}
+		\end{figure}
+
+				\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/depth_ubuntu-hist.pdf}}
+			\caption{Histogram of file path depth on Ubuntu.}
+			\label{fig:ubuntu-depth}
+		\end{figure}
+
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-master.pdf}}
+			\caption{Correlation matrix (OS X and Ubuntu).}
+			\label{fig:corrplot}
+		\end{figure}
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-mac.pdf}}
+			\caption{Correlation matrix (OS X).}
+			\label{fig:corrplot-mac}
+		\end{figure}
+
+
+		\begin{figure}[H]
+			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-ubuntu.pdf}}
+			\caption{Correlation matrix (Ubuntu).}
+			\label{fig:corrplot-ubuntu}
+		\end{figure}
 
 	\section{Analysis \& Discussion}
 
 	\begin{appendices}
 
 		\section{Data Sources}
-			\label{app:data}
+			\label[appendix]{app:data}
 			\begin{tabular}{|l|c|r|}\hline%
 				\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
-				\csvreader[head to column names]{datafiles.csv}{}%
+				\csvreader[head to column names]{traverse/data/datafiles.csv}{}%
 				{\\\Name & \Platform & \Timestamp}%
 			     \\\hline
 		   \end{tabular}
 
 		\section{Source Code Listings}
 			\subsection{\texttt{traverse.py} Source Code}
-			\label{app:traverse}
+			\label[appendix]{app:traverse}
 				\lstinputlisting[style=appendixPy]{"traverse/src/traverse.py"}
 
 			\subsection{\texttt{traverselite.py} Source Code}
-			\label{app:traverselite}
+			\label[appendix]{app:traverselite}
 				\lstinputlisting[style=appendixPy]{traverse/src/traverselite.py}
 
 	\end{appendices}
