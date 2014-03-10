@@ -79,7 +79,7 @@
       <file>Lab5Report.bcf</file>
     </requires>
     <requires type="editable">
-      <file>Lab2.bib</file>
+      <file>Lab5.bib</file>
     </requires>
   </external>
 </requests>
