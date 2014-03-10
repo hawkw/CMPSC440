@@ -76,11 +76,12 @@
 
 \author{Hawk Weisman\\Allegheny College Dept. of Computer Science}
 \title{\texttt{traverse.py}: Automated Traversal of Filesystems for Data Collection \& Analysis}
-\date{Monday, February 10th, 2014}
+\date{Monday, March 10th, 2014}
 
 \begin{document}
 	\maketitle
 	\tableofcontents
+	\pagebreak
 	\section{Introduction}
 		
 		An understanding of filesystem characteristics is key to the successful design and implementation of operating systems. Knowledge of typical filesystem use patterns makes it possible to optimize filesystems to support those patterns. While these systems can be implemented based on projections and conjecture, information collected from real filesystems ``in the wild'' provide a much more accurate picture of filesystem use patterns. However, in order to draw meaningful conclusions from such empirically gathered data, it is necessary to collect samples from a large number of individual machines, across as wide a range of hardware and software environments and use cases as possible. Therefore, instruments for data collection must be as portable and versatile as possible.
@@ -143,11 +144,11 @@
 
 		\subsection{Data Analysis \& Presentation}
 
-			Data was analyzed using the IPython interactive computing environment \cite{ipython}. The Pandas and Matplotlib libraries \cite{pandas,matplotlib} were used for statistical analysis and visualization, respectively. Comma-separated values containing collected data were accessed from the Git repository using the metadata CSV file, with a known static URL, to retrieve the URLs of other data files. After retrieval, the data files were parsed into Pandas DataFrames for analysis and graphing. A static copy of the IPython notebook used for data analysis may be viewed at \allowbreak\url{http://nbviewer.ipython.org/gist/hawkw/8906418}.
+			Data was analyzed using the IPython interactive computing environment \cite{ipython}. The \texttt{pandas} and \texttt{matplotlib} libraries \cite{pandas,matplotlib} were used for statistical analysis and visualization, respectively. Comma-separated values containing collected data were accessed from the Git repository using the metadata CSV file, with a known static URL, to retrieve the URLs of other data files. After retrieval, the data files were parsed into Pandas \texttt{DataFrame}s for analysis and graphing. A static copy of the IPython notebook used for data analysis may be viewed at \allowbreak\url{http://nbviewer.ipython.org/gist/hawkw/8906418}.
 
 			Logarithmic histograms were produced for file size and link count, showing the distribution across all operating systems (\cref{fig:size_hist,fig:nlink_hist}) and for individual operating systems (\cref{fig:size_mac-hist,fig:size_ubuntu-hist,fig:nlink_mac-hist,fig:nlink_ubuntu-hist}). Items of size zero (directories) were excluded from plots of file size distribution for two reasons: one, that they are not technically files, and two, that they would bias histograms to the extent that the distribution pattern would be difficult to discern.
 
-			Histograms were also prepared for measurements of file path depth, which was measured by counting the number of path separator characters\footnote{\texttt{/} on Mac OS X and Ubuntu} in the path to each object found, with \cref{fig:depth} showing depth for the entire dataset, and \cref{fig:mac-depth,fig:ubuntu-depth}  showing depth for Mac OS X and Ubuntu. Three pairwise correlation plots were drawn: one of the entire dataset (\cref{fig:corrplot}), and one for each of the operating systems from which data was collected (\cref{fig:corrplot-mac,fig:corrplot-ubuntu}).
+			Histograms were also prepared for measurements of file path depth, which was measured by counting the number of path separator characters\footnote{``\texttt{/}'' on Mac OS X and Ubuntu} in the path to each object found, with \cref{fig:depth} showing depth for the entire dataset, and \cref{fig:mac-depth,fig:ubuntu-depth}  showing depth for Mac OS X and Ubuntu. Three pairwise correlation plots were drawn: one of the entire dataset (\cref{fig:corrplot}), and one for each of the operating systems from which data was collected (\cref{fig:corrplot-mac,fig:corrplot-ubuntu}).
 
 	\section{Results}
 
@@ -158,6 +159,7 @@
 		\Cref{fig:size_hist,fig:size_mac-hist,fig:size_ubuntu-hist} show the distribution of file sizes observed, plotted on a logarithmic axis. A majority of filesystem items observed fell into the smallest bin, even with 0-byte items (directories) excluded.
 
 		\begin{table}[h]
+		\centering
 		\caption{Size of filesystem items}
 		\label{table:size}
 			\begin{tabular}{l r r r r}
@@ -187,9 +189,10 @@
 			\label{fig:size_ubuntu-hist}
 		\end{figure}
 
-		\Cref{table:nlink} shows the mean, standard deviation, and minimum and maximum link counts observed on Mac OS X, Ubuntu, and across both operating systems. The mean number of links on Ubuntu was 1.429467, while the mean number of links on Mac OS X was 2.152924. However, the standard deviation in link count observed Mac OS X, 35.360418 links, is over a power of ten greater than the standard deviation observed on Ubuntu, 3.559488 links. Furthermore, the most linked item on Mac OS X had 26,760 links, while the most linked item observed on machines running Ubuntu had only 474 links.
+		\Cref{table:nlink} shows the mean, standard deviation, and minimum and maximum link counts observed on Mac OS X, Ubuntu, and across both operating systems. The mean number of links on Ubuntu was 1.429467, while the mean number of links on Mac OS X was 2.152924, implying that the average filesystem object on Mac OS X tends to have slightly more links than on Ubuntu. However, the standard deviation in link count observed Mac OS X, 35.360418 links, is over a power of ten greater than the standard deviation observed on Ubuntu, 3.559488 links. Furthermore, there was a significant difference between the maximum number of links observed on Mac OS X and Ubuntu. On OS X, the highest observed link count was 26,760, while the most linked object on Ubuntu had only 474.
 
 		\begin{table}[h]
+		\centering
 		\caption{Link density of filesystem items}
 		\label{table:nlink}
 			\begin{tabular}{l r r r r}
@@ -201,7 +204,7 @@
 			\end{tabular}
 		\end{table}
 
-		\Cref{fig:nlink_mac-hist,fig:nlink_ubuntu-hist} show logarithmic histograms for link count density on Mac OS X and Ubuntu, while \cref{fig:nlink_hist} shows a histogram for both operating systems.
+		\Cref{fig:nlink_mac-hist,fig:nlink_ubuntu-hist} show logarithmic histograms for link count density on Mac OS X and Ubuntu, while \cref{fig:nlink_hist} shows a histogram for both operating systems. \Cref{fig:nlink_mac-hist,fig:nlink_ubuntu-hist} show that while the distributions were relatively similar, much higher link counts were observed on Ubuntu than on Mac OS X.
 
 		\begin{figure}[H]
 			\centerline{\includegraphics[width=0.9\textwidth]{figures/nlink_hist.pdf}}
@@ -223,6 +226,7 @@
 
 
 		\begin{table}[h]
+		\centering
 		\caption{Depth of filesystem items}
 		\label{table:depth}
 			\begin{tabular}{l r r r r}
@@ -234,6 +238,7 @@
 			\end{tabular}
 		\end{table}
 
+			\Cref{table:depth} shows the mean, standard deviation, and minimum and maximum link depths observed on Mac OS X, Ubuntu, and across both operating systems. The mean depth on Ubuntu was 10.18107 directories deep, while the mean depth observed on Mac OS X was 11.92237 directories deep. However, the difference between these two mean depths is within the standard deviation, implying that there is probably not a difference in depth between these operating systems.
 
 		\begin{figure}[H]
 			\centerline{\includegraphics[width=0.9\textwidth]{figures/depth_hist.pdf}}
@@ -254,11 +259,15 @@
 		\end{figure}
 
 
+		\Cref{fig:corrplot,fig:corrplot-mac,fig:corrplot-ubuntu} show pairwise correlation matricies for each variable in the dataset, with \cref{fig:corrplot} showing the entire dataset, \cref{fig:corrplot-mac} showing only data collected from computers running Mac OS X, and \cref{fig:corrplot-ubuntu} showing only data collected from computers running Ubuntu.
+
 		\begin{figure}[H]
 			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-master.pdf}}
 			\caption{Correlation matrix (OS X and Ubuntu).}
 			\label{fig:corrplot}
 		\end{figure}
+
+		\Cref{fig:corrplot} shows a strong correlation ($p = 0.98$) between user ID and group ID, relatively strong correlations between the time of last modification and last status change ($p  = 0.48$) and between inode number and device number ($p = 0.34$), and very weak correlations between device number and user ID ($p = -0.85$) and device number and group ID ($ p = -0.93$).
 
 		\begin{figure}[H]
 			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-mac.pdf}}
@@ -266,6 +275,7 @@
 			\label{fig:corrplot-mac}
 		\end{figure}
 
+		\Cref{fig:corrplot-mac} shows strong correlations between time modified and time created ($p = 0.63$), and between inode number and device number ($p = 0.62$),  weak correlations between device number time of last status change ($p = -0.51$) and device number and time of last modification ($-0.35$), and a relatively weak correlation between user ID and group ID ($p = -0.2$) on systems running Mac OS X.
 
 		\begin{figure}[H]
 			\centerline{\includegraphics[width=0.9\textwidth]{figures/corrplot-ubuntu.pdf}}
@@ -273,19 +283,47 @@
 			\label{fig:corrplot-ubuntu}
 		\end{figure}
 
+		\Cref{fig:corrplot-ubuntu} shows strong correlations between user ID and group ID ($p = 0.99$), between inode number and group ID ($p = 0.93$) and between inode number and user ID ($p = 0.92$), and relatively weak correlations between inode number and device number ($p = -0.41$) on systems running Ubuntu.
+
+		\pagebreak
 	\section{Analysis \& Discussion}
+
+		While both Mac OS X and Ubuntu are Unix-based, POSIX-compativle operating systems, this study identified several interesting differences between computers running these two operating systems:
+		\begin{enumerate}
+			\item{A much higher maximum file size and a slightly higher mean file size were observed on Ubuntu than on Mac OS X (\cref{table:size}).}
+			\item{A much higher maximum link count was observed on Mac OS X than on Ubuntu (\cref{table:nlink}).}
+			\item{Correlations between time modified and time created and between inode number and device number were strong on Mac OS X (\cref{fig:corrplot-mac}) and weak on Ubuntu (\cref{fig:corrplot-ubuntu}).}
+			\item{Correlations between user ID and group ID, between inode number and group ID, and between inode number and user ID were strong on Ubuntu (\cref{fig:corrplot-ubuntu}) and weak on Mac OS X (\cref{fig:corrplot-mac}).}
+		\end{enumerate}
+
+		Why a much higher maximum file size was observed on Ubuntu is currently unknown. It is possible that this is the result of a statistical outlier, such as one Ubuntu machine being used to store several very large files, that might have lead to a bias in the dataset. It is also possible that Ubuntu stores large files, such as backups or swap files, in the user's home directory, while Mac OS X stores these files in a location that was not visited by the traversal program.
+
+		Similarly, the cause of the significantly higher maximum link count on Ubuntu is also unknown. Once again, this may be a statistical outlier such as the result of some form of filesystem corruption on one of the compters from which data was collected. The mean link count on Mac OS X was only slightly higher than that on Ubuntu, but the standard deviation was much higher, implying that filesystem objects with significantly more links than the average are much more common on Mac OS X. However, the maximum observed link count on OS X is more than 800 standard deviations away from the mean, implying that it is an outlier of some form.
+
+		The difference in correlations are probably a result of differences in the filesystem implementation on both operating systems. Many of the differences in correlations involved inode numbers, which implies that Mac OS X and Ubuntu may assign inode numbers differently or order the inode table differently. Perhaps Mac OS X assigns inode numbers based on which device the inode is on, while Ubuntu assigns them based on the user ID of the owner. Group ID and user IDs were strongly correlated on Ubuntu, but weakly correlated on Mac OS X, implying that perhaps the way these two operating systems handle users and groups may differ as well.
 
 	\begin{appendices}
 
 		\section{Data Sources}
 			\label[appendix]{app:data}
-			\begin{tabular}{|l|c|r|}\hline%
-				\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
-				\csvreader[head to column names]{traverse/data/datafiles.csv}{}%
-				{\\\Name & \Platform & \Timestamp}%
-			     \\\hline
-		   \end{tabular}
+			\begin{table}[H]
+			\centering
+				\begin{tabular}{lcr}\hline%
+					\textbf{Name} & \textbf{Platform} & \textbf{Timestamp}\\\hline
+					\csvreader[head to column names]{traverse/data/datafiles.csv}{}%
+					{\\\Name & \Platform & \Timestamp}%
+				     \\\hline
+			   \end{tabular}
+			   \caption{Data sources for filesystem data.}
+			   \label{table:datasources}
+			\end{table}
 
+			\Cref{table:datasources} shows a listing of the computers from which data was collected. As seen in the table, data was collected from five computers running Mac OS X, self-reporting as ``darwin'', and from nine computers running Ubuntu, which self-reported as ``linux2''. While some individuals, including the author, contributed data multiple times, this data was collected from different computers, sometimes running different operating systems. When data was collected from the same computer multiple times, only the most recent dataset was used.
+
+			With the exception of the data provided by Cody Kineer and Gabriel Kelly, all of the data from Ubuntu machines was collected from user accounts on the Alden Hall network at Allegheny College. All contributors other than Harry Grillo were Allegheny College students studying Computer Science.
+
+			The timestamps for the first two data sources do not include the hour, minute, second, or milliseconds, and report only the date. This is due to the fact that timestamps were not collected by the traversal tool when these datasets were collected, and the timestamps were added manually post-collection.
+		\pagebreak
 		\section{Source Code Listings}
 			\subsection{\texttt{traverse.py} Source Code}
 			\label[appendix]{app:traverse}
