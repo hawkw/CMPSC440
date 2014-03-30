@@ -46,7 +46,7 @@
 
 	<!-- RUNNING TASK - "ant run" -->
 	<target name="run" depends="compile">
-		<java fork="true" classname="ProducerConsumer" maxmemory="1024m">
+		<java fork="true" classname="UseSizeOf" maxmemory="1024m">
 			<arg line="${args}"/>
 			<classpath refid="run.classpath" />
         </java>
