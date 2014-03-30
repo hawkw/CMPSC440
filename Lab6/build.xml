@@ -1,0 +1,55 @@
+<project>
+	
+	<!-- SETUP VARIABLES AND PATHS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+	<property name="" value="" />
+
+	<property name="lib.dir" value="lib/" />
+	<property name="src.dir" location="src/" />
+	<property name="build.dir" location="bin/" />
+
+	<!-- The standard classpath for building the system -->
+	<path id="build.classpath">
+		<fileset dir="${lib.dir}" includes="*.jar" />
+	</path>
+
+	<!-- The classpath for running the system -->
+	<path id="run.classpath">
+		<pathelement path="${build.dir}"/>
+		<fileset dir="${lib.dir}" includes="*.jar"/>
+	</path>
+
+	<!-- BASIC TARGETS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+	<!-- CLEANING TASK - "ant clean" -->
+	<target name="clean">
+		<delete dir="${build.dir}"/>
+		<delete dir="${dist.dir}"/>
+		<delete dir="${result.dir}"/>
+	</target>
+	
+	<!-- COMPILING TASK - "ant compile" -->  
+	<target name="compile">
+		<mkdir dir="${build.dir}"/>
+		<javac srcdir="${src.dir}" destdir="${build.dir}" includeantruntime="false" debug="true" debuglevel="vars,lines,source">
+			<classpath refid="build.classpath"/>
+			<compilerarg value="-Xlint:unchecked"/> 
+			<compilerarg value="-Xlint:deprecation"/> 
+		</javac>
+	</target>
+
+	<!-- COMPILING TASK - "ant build" - alias of "ant compile" -->
+	<target name ="build" depends = "compile" />
+
+
+	<!-- RUNNING TARGETS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+
+	<!-- RUNNING TASK - "ant run" -->
+	<target name="run" depends="compile">
+		<java fork="true" classname="UseSizeOf" maxmemory="1024m">
+			<arg line="${args}"/>
+			<classpath refid="run.classpath" />
+        </java>
+	</target>
+
+</project>
