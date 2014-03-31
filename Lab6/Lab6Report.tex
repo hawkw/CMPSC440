@@ -20,7 +20,7 @@
   xrightmargin=\parindent,
   language=Java,
   showstringspaces=false,
-  basicstyle=\small,
+  basicstyle=\footnotesize,
   numberstyle=\tiny,
   keywordstyle=\bfseries,
   commentstyle=\itshape,
@@ -34,7 +34,7 @@
   xrightmargin=\parindent,
   language=C,
   showstringspaces=false,
-  basicstyle=\small,
+  basicstyle=\footnotesize,
   numberstyle=\tiny,
   keywordstyle=\bfseries,
   commentstyle=\itshape,
@@ -48,7 +48,7 @@
   xrightmargin=\parindent,
   language=Python,
   showstringspaces=false,
-  basicstyle=\small,
+  basicstyle=\footnotesize,
   numberstyle=\tiny,
   keywordstyle=\bfseries,
   commentstyle=\itshape,
@@ -62,7 +62,7 @@
   xrightmargin=\parindent,
   language=XML,
   showstringspaces=false,
-  basicstyle=\small,
+  basicstyle=\footnotesize,
   numberstyle=\tiny,
   keywordstyle=\bfseries,
   commentstyle=\itshape,
@@ -77,6 +77,9 @@
 \begin{document}
 	\maketitle
 	\section {Introduction}
+
+		In this laboratory assignment, we were invited to investigate the sizes of variables in Java and C, as part of our study into how programming languages manage memory. I chose to additionally investigate the size of primitive variables in Python, as well, so that I could compare that language to C and Java.
+
 	\section {Methods}
 		
 		C, Java, and Python programs were prepared to determine the sizes of primitive data types in each of these languages. The source code for these programs can be seen in \Cref{ap:source}, with \Cref{lst:c}, \Cref{lst:java}, and \Cref{lst:py} giving the source code for the C, Java, and Python programs, respectively. In each programming language, the size of the language's numeric primitive types and four user-defined types of roughly analogous function.
@@ -149,6 +152,9 @@
 						int          &     24 &    192 \\
 						float        &     24 &    192 \\
 						complex      &     32 &    256 \\
+						tuple (empty)       &     56 &    448 \\
+						tuple (two ints)       &     72 &    576 \\
+						tuple  (three ints)      &     80 &    640 \\
 						object       &     16 &    128 \\
 						  \bottomrule
 		        \end{tabular}
@@ -162,6 +168,8 @@
 		Python's type system is significantly different than those of C and Java. As shown in \Cref{table:pri-py}, Python has only three numeric types, \texttt{int}, \texttt{float}, and \texttt{complex}. While C and Java are strongly-typed languages, Python exhibits ``duck typing'', a style of typing in which types can be intermingled, provided they provide compatible methods and properties. Furthermore, in Python, all data types, including numeric types, are objects. This is in contrast to C, which is not an object-oriented language and has no objects whatsoever; and Java, which has primitive numeric types which can be wrapped in objects. 
 
 		It's interesting to note that Python's integer and floating-point types are the same size. Since these types are also objects, and a bare Python object is 16 bytes, we can infer that 8 bytes are used to store the actual numeric values, since $24 - 16 = 8$. Similarly, we can also infer that Python's \texttt{complex} type uses 16 bytes to store the numeric values of complex numbers. 
+
+		\Cref{table:pri-py} shows that in Python, an empty tuple is 56 bytes, while a tuple containing two integers is 72 bytes, and a tuple containing three integers is 80 bytes. It's interesting to note that the difference in bytes between an empty tuple and a tuple with two integer is 16 bytes, and when an additional integer is added, the tuple grows by 8 bytes. This is interesting in light of the fact that a single integer is 24 bytes. Based on this and the observation made in the previous paragraph that Python uses eight bytes to store the actual numeric values of its' integers, we can assume that integers in a tuple are not objects\footnote{At least when they are added to the tuple as integer literals, as in \texttt{UseSizeOf.py}.}.
 
 		The fact that all of Python's primitive data types are significantly larger than those of C and Java is interesting as well. Python's designers, we might guess, may have chosen that the flexibility and ease of programming provided by duck typing is more valuable than optimizing programs to take up very little space in memory. They might have made this choice based on the observation that modern computers tend to have a great deal of memory compared to those used when C was implemented, and that programming problems have grown in size and complexity.
 
@@ -218,15 +226,31 @@
 		    \end{subtable} 
 		\end{table}
 
-		In C, the \texttt{struct} is the primary tool for bundling together multiple variables under one name. A \texttt{struct} represents a contiguous block of memory, with a pointer to the top of that block. \Cref{table:usr-c} shows the sizes of three \texttt{struct}s. Note that the \texttt{int_2d} struct, which consists of two \texttt{int} variables, is 8 bytes, and a C \texttt{int} is 4 bytes. Similarly, the \texttt{int_3d} struct is the size of three \texttt{int}s, and the sizes of the \texttt{struct}s consisting of \texttt{double}s are equal to the number of \texttt{double}s in the \texttt{struct}.  We can then infer that the same is true of all \texttt{structs}, based on the knowledge that a \texttt{struct} is simply a contiguous block of memory containing multiple variables.
+		In C, the \texttt{struct} is the primary tool for bundling together multiple variables under one name. A \texttt{struct} represents a contiguous block of memory, with a pointer to the top of that block. \Cref{table:usr-c} shows the sizes of three \texttt{struct}s. Note that the \texttt{int\_2d} struct, which consists of two \texttt{int} variables, is 8 bytes, and a C \texttt{int} is 4 bytes. Similarly, the \texttt{int\_3d} struct is the size of three \texttt{int}s, and the sizes of the \texttt{struct}s consisting of \texttt{double}s are equal to the number of \texttt{double}s in the \texttt{struct}.  We can then infer that the same is true of all \texttt{structs}, based on the knowledge that a \texttt{struct} is simply a contiguous block of memory containing multiple variables.
 
 		Java and Python are object-oriented languages. Where a \texttt{struct} is a bundling together of multiple variables, an object bundles together multiple variables and the methods that act on those variables. In the case of Java, each object has a constructor, a method which creates new instances of that object, and accessor and mutator methods for each of its' fields, which are declared \texttt{private} in order to facilitate encapsulation. Private class variables are not part of the Python idiom, so in the Python objects, the class variables are public and the objects only contain one method, the constructor. 
 
-		Examining \Cref{table:usr-java} and \cref{table:usr-py}, which show the size of objects in Java and Python, respectively, we see that the size of Java objects is equal to 
+		Examining \Cref{table:usr-java} and \cref{table:usr-py}, which show the size of objects in Java and Python, respectively, we see that the size of Java objects is equal to the variables that compose them, plus eight bytes. Referring to \Cref{table:pri-java}, we note that a bare object in Java is 8 bytes. The sizes of the Python objects shown in \Cref{table:usr-py} is a bit more interesting: all of the objects appear to be the same size! It makes sense for the integer-precision and double-precision objects to be the same size, as Python's \texttt{int} and \texttt{float} data types are the same number of bytes, but it makes much less sense for the 2D and 3D points, which contain different numbers of variables, to be the same size. This may be due to some unknown characteristics of the manner in which Python objects function. It is worth noting that these objects were all initiated with all values equal to 0, which may have some impact on their size in memory.
 
 	\section {Discussion}
 		\subsection{Future Research}
+
+			The way in which Python stores objects might be an interesting topic for further investigation, in light of the fact that the four Python objects shown in \Cref{table:usr-py} all appear to be the same size, which should not be possible. Determining why this is possible in Python would be very interesting.
+
+			It would also be interesting to conduct research into additional data types, such as C's \texttt{union}. However, there is no direct equivalent to the \texttt{union} in Java and Python. While Python's tuples were examined, we could also investigate other data types, such as arrays and lists. However, Python has no native array type\footnote{Although one is present in the \texttt{numpy} package.}, listsdo not exist in C and are implemented very differently in Java and Python.
+
+			Investigating the size of variables in another language might be interesting as well. One potential subject is Go, since it implements \texttt{struct}s similar to those present in C. 
+
 		\subsection{Challenges and Difficulties}
+
+			A number of interesting difficulties were encountered and overcome during the course of this lab assignment. The primary difficulty related to differences between the methods available to determine the sizes of dara types available in the different programming languages being investigated.
+
+			For example, C's \texttt{sizeof()} operator may be used on a type, while the \texttt{ObjectProfiler} used to investigate the size of Java objects may only be used on instances of a type, as it is evaluated at runtime rather than at compile-time. I ended up writing a method which took a class as an argument and then used \texttt{class.newInstance()} to generate anonymous instances of that class for profiling. Similarly, I found that it was not possible to create generic instances of user-defined classes in Python, so I ended up initializing the \textt{Int2D}, \texttt{Int3D}, \texttt{Float2D}, and \texttt{Double2D} classes with values, which I had not wanted to do.
+
+			I chose to use the \texttt{.SIZE} field available in Java's primitive-wrapper classes to get the size of Java primitive data types, rather than using the \texttt{ObjectProfiler}, as I felt this method was more similar to C's \texttt{sizeof()} operator. However, this led to a couple minor difficulties: first, the \texttt{Boolean} object did not have such a field, so I had to profile it at runtime using the \texttt{ObjectProfiler}; and second, that these values were reported in bits, rather than in bytes, meaning that my Java program needed both a method to convert bits to bytes and a method to convert bytes to bits, as the measurements from the \texttt{ObjectProfiler} were reported in bytes.
+ 
+			Another challenge was having to add the \texttt{ObjectProfiler} jarfile to the Java CLASSPATH at the beginning of every session, a common annoyance when working with Java, which I found to be a minor waste of time. I ended up using an Ant buildfile (\Cref{lst:ant}) to avoid this.
+
 	\appendix
 		\section{Source Code}
 			\label{ap:source}
