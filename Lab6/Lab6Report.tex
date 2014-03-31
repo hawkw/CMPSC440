@@ -1,0 +1,242 @@
+\documentclass[12pt,letterpaper]{article}
+
+\usepackage[titletoc]{appendix}
+\usepackage[compatibility=false]{caption}
+
+\usepackage{fullpage, listings, footnote, graphicx, multicol, enumitem, latexsym, placeins, csvsimple}
+\usepackage{algorithm,algpseudocode}
+\usepackage{subcaption, booktabs}
+
+\usepackage[backend=biber,style=numeric]{biblatex}
+
+\usepackage{hyperref}
+\usepackage{cleveref}
+\setdescription{leftmargin=\parindent,labelindent=\parindent}
+\pdfpxdimen=\dimexpr 1 in/72\relax
+\lstdefinestyle{appendixJava}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=Java,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{appendixC}{%
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=C,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{appendixPy}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=Python,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\lstdefinestyle{appendixXML}{
+  belowcaptionskip=1\baselineskip,
+  breaklines=true,
+  xleftmargin=\parindent,
+  xrightmargin=\parindent,
+  language=XML,
+  showstringspaces=false,
+  basicstyle=\small,
+  numberstyle=\tiny,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  numbers = left,
+  tabsize=4,
+}
+\crefname{lstlisting}{listing}{listings}
+\Crefname{lstlisting}{Listing}{Listings}
+\author{Hawk Weisman\\CMPSC440: Operating Systems}
+\title{Lab 6: Measuring the Size of Program Variables in C and Java}
+\date{Monday, March 31st, 2014}
+\begin{document}
+	\maketitle
+	\section {Introduction}
+	\section {Methods}
+		
+		C, Java, and Python programs were prepared to determine the sizes of primitive data types in each of these languages. The source code for these programs can be seen in \Cref{ap:source}, with \Cref{lst:c}, \Cref{lst:java}, and \Cref{lst:py} giving the source code for the C, Java, and Python programs, respectively. In each programming language, the size of the language's numeric primitive types and four user-defined types of roughly analogous function.
+
+		In the C program, the \texttt{sizeof()} operator was used to calculate the size of the data types under study, \texttt{short}, \texttt{int}, \texttt{long}, \texttt{long long}, \texttt{float}, \texttt{double}, \texttt{long double}, \texttt{char}, \texttt{char*}, and \texttt{\_Bool}, the last of which came from the external \texttt{stdbool.h} library. Since \texttt{sizeof()} produces the size of an object in bytes, the size in bits was calculated by multiplying the measurement in bytes by the \texttt{CHAR\_BIT} constant in \texttt{limits.h}. Rather than actually assessing the size of an instance of a data type in memory, the \texttt{sizeof()} operator is evaluated at compile-time, with the C compiler replacing it with a constant equal to the size value of that data type. 
+
+		In Java, such an operator is not available, so the sizes of objects were profiled using the \texttt{ObjectProfiler} library, written by Vlad Roubtsov and available at \url{http://www.javaworld.com/columns/jw-qna-index.shtml}. However, \texttt{ObjectProfiler} works differently from C's \texttt{sizeof()} operator --- it determines  the sizes of instances of objects in memory at runtime, rather than at compile time. Since Java's primitive data types --- \texttt{short}, \texttt{int}, \texttt{long}, \texttt{float}, \texttt{double}, \texttt{boolean}, and \texttt{char} --- are not objects, \texttt{ObjectProfiler} cannot determine their sizes. However, the wrapper classes for these data types have a constant field \texttt{.SIZE}, which contains the size in bits of the data type wrapped by that class. These measurements in bits were converted to bytes by dividing the size in bits by the number of bits in one byte, while the byte values produced by the \texttt{ObjectProfiler} were converted to bits using the same formula in reverse.
+
+		It would also be possible to profile these data types using \texttt{ObjectProfiler}, by passing it a wrapper class containing a primitive and then subtracting the size of the object pointer from the size measurement. This was done for the \texttt{boolean} type, as the \texttt{Boolean} wrapper class does not contain a \texttt{.SIZE} field. However, the \texttt{.SIZE} field was used when it was available, as it was judged to be more similar to the \texttt{sizeof()} operator in C. In order to avoid repeatedly adding the \texttt{ObjectProfiler} jarfile to the CLASSPATH, an Ant buildfile (\Cref{lst:ant}) was used for building and running the Java program.
+
+		In Python, data types were profiled using the \texttt{sys.getsizeof()} method in the Python standard library.  In Python, all data types, including numbers, are objects, and \texttt{sys.getsizeof()} simply calls the object's built-in \texttt{\_\_sizeof\_\_} method, adding the additional overhead added by the garbage collector if that object is managed by the garbage collector.
+	\section {Results and Analysis}
+		\Cref{table:pri-c} gives the sizes of primitive data types in C. For the most part, these values are as expected, although it is interesting to note that the \texttt{long} and \texttt{long long} data types are the same size. This is due to the way these primitives are defined in the C standard: \texttt{long} is defined as being at least 32 bits, while \texttt{long long} is defined as being at least 64 bits. However, since the C standard defines a minimum size, rather than a fixed size, for these data types, they may be longer than the specified size. On most 64-bit systems, \texttt{long} is 64 bits, while on most 32-bit systems, it is 32 bits. Since data was collected from a 64-bit computer running a 64-bit operating system, these values make sense. 
+
+		It is also interesting to note that the \texttt{\_Bool} data type from \texttt{stdbool.h} is a whole byte, or 8 bits. Theoretically, it would be possible to represent boolean values with a single bit. However, most operating systems do not allow single bits in memory to be addressed independantly, necessitating that the boolean type be at least a byte, the smallest addressable size in memory.
+
+		\begin{table}[H]
+		    \caption{Sizes of primitive data types.}
+		    \label{table:pri}
+		    \centering
+		    \begin{subtable}[t]{.33\linewidth}
+		      \centering
+		        \caption{C}
+		        \label{table:pri-c}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+						short        & 2 &       16 \\
+						int          & 4 &       32 \\
+						long         & 8 &       64 \\
+						long long    & 8 &       64 \\
+						float        & 4 &       32 \\
+						double       & 8 &       64 \\
+						long double  & 16 &      128 \\
+						char         & 1 &        8 \\
+						char*        & 8 &       64 \\
+						\_Bool        & 1 &        8 \\
+						\bottomrule
+		        \end{tabular}
+		    \end{subtable}%
+		    \begin{subtable}[t]{.33\linewidth}
+		      \centering
+		        \caption{Java}
+		        \label{table:pri-java}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+					  byte         & 1 &        8 \\
+					  short        & 2 &       16 \\
+					  int          & 4 &       32 \\
+					  long         & 8 &       64 \\
+					  float        & 4 &       32 \\
+					  double       & 8 &       64 \\
+					  char         & 2 &       16 \\
+					  boolean      & 1 &        8 \\
+					  Object       & 8 &       64 \\
+					  \bottomrule
+		        \end{tabular}%
+		    \end{subtable} 
+		    \begin{subtable}[t]{.33\linewidth}
+		      \centering
+		        \caption{Python}
+		        \label{table:pri-py}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+						int          &     24 &    192 \\
+						float        &     24 &    192 \\
+						complex      &     32 &    256 \\
+						object       &     16 &    128 \\
+						  \bottomrule
+		        \end{tabular}
+		    \end{subtable} 
+		\end{table}
+
+		\Cref{table:pri-java} gives the sizes of primitive data types in Java. For the most part, these are very similar to the C primitive data types given in \Cref{table:pri-c}, with a few interesting exceptions. This makes sense, since Java is often considered to be a C-inspired language. It is interesting to note that Java lacks the \texttt{long long} and \texttt{long double} data types available in C. 
+
+		Another difference is that a \texttt{char} in Java is twice the size of a \texttt{char} in C. This is due to the fact that C's standard character set is ASCII, which uses 8 bits to represent $2^8$ (256) characters, while Java uses the 16-bit Unicode character set by default.Unicode has $2^16$ (65536) possible characters, allowing it to represent most of the world's written languages, at the expense of having characters and character strings which are twice as large as those of C.
+
+		Python's type system is significantly different than those of C and Java. As shown in \Cref{table:pri-py}, Python has only three numeric types, \texttt{int}, \texttt{float}, and \texttt{complex}. While C and Java are strongly-typed languages, Python exhibits ``duck typing'', a style of typing in which types can be intermingled, provided they provide compatible methods and properties. Furthermore, in Python, all data types, including numeric types, are objects. This is in contrast to C, which is not an object-oriented language and has no objects whatsoever; and Java, which has primitive numeric types which can be wrapped in objects. 
+
+		It's interesting to note that Python's integer and floating-point types are the same size. Since these types are also objects, and a bare Python object is 16 bytes, we can infer that 8 bytes are used to store the actual numeric values, since $24 - 16 = 8$. Similarly, we can also infer that Python's \texttt{complex} type uses 16 bytes to store the numeric values of complex numbers. 
+
+		The fact that all of Python's primitive data types are significantly larger than those of C and Java is interesting as well. Python's designers, we might guess, may have chosen that the flexibility and ease of programming provided by duck typing is more valuable than optimizing programs to take up very little space in memory. They might have made this choice based on the observation that modern computers tend to have a great deal of memory compared to those used when C was implemented, and that programming problems have grown in size and complexity.
+
+		\Cref{table:usr} presents the sizes of four user-defined types in C, Java, and Python. For this investigation, geometric points in 2- and 3-dimensional space were chosen as an example of user-defined types consisting of multiple numerical primitives. The \texttt{Int2D} and \texttt{Int3D} types represent the coordinates a point in 2- and 3-dimensional space, respectively, with integer precision, while the \texttt{Double2D} and \texttt{Double3D} types represent similar points with coordinates recorded in double-precision. Python has no \texttt{double} datatype, but its \texttt{float} numbers are represented in double-precision, meaning that Python's \texttt{float} is comparable to \texttt{double} in C and Java.
+
+			\begin{table}[H]
+		    \caption{Sizes of user-defined data types.}
+		    \label{table:usr}
+		    \centering
+		    \begin{subtable}{.33\linewidth}
+		      \centering
+		        \caption{C}
+		        \label{table:usr-c}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+						int\_2d       & 8 &       64 \\
+						int\_3d       & 12 &       96 \\
+						double\_2d    & 16 &      128 \\
+						double\_3d    & 24 &      192 \\
+						\bottomrule
+		        \end{tabular}
+		    \end{subtable}%
+		    \begin{subtable}{.33\linewidth}
+		      \centering
+		        \caption{Java}
+		        \label{table:usr-java}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+					      Int2D        & 16 &      128 \\
+					      Int3D        & 20 &      160 \\
+					      Double2D     & 24 &      192 \\
+					      Double3D     & 32 &      256 \\
+					      \bottomrule
+		        \end{tabular}%
+		    \end{subtable} 
+		    \begin{subtable}{.33\linewidth}
+		      \centering
+		        \caption{Python}
+		        \label{table:usr-py}
+					\begin{tabular}{l r r}
+						\toprule
+						Data type & bytes & bits\\
+						\midrule
+						Int2D             &64&     512 \\
+						Int3D             &64 &    512 \\
+						Float2D           &64 &    512 \\
+						Float3D          & 64  &   512 \\
+						\bottomrule
+		        \end{tabular}
+		    \end{subtable} 
+		\end{table}
+
+		In C, the \texttt{struct} is the primary tool for bundling together multiple variables under one name. A \texttt{struct} represents a contiguous block of memory, with a pointer to the top of that block. \Cref{table:usr-c} shows the sizes of three \texttt{struct}s. Note that the \texttt{int_2d} struct, which consists of two \texttt{int} variables, is 8 bytes, and a C \texttt{int} is 4 bytes. Similarly, the \texttt{int_3d} struct is the size of three \texttt{int}s, and the sizes of the \texttt{struct}s consisting of \texttt{double}s are equal to the number of \texttt{double}s in the \texttt{struct}.  We can then infer that the same is true of all \texttt{structs}, based on the knowledge that a \texttt{struct} is simply a contiguous block of memory containing multiple variables.
+
+		Java and Python are object-oriented languages. Where a \texttt{struct} is a bundling together of multiple variables, an object bundles together multiple variables and the methods that act on those variables. In the case of Java, each object has a constructor, a method which creates new instances of that object, and accessor and mutator methods for each of its' fields, which are declared \texttt{private} in order to facilitate encapsulation. Private class variables are not part of the Python idiom, so in the Python objects, the class variables are public and the objects only contain one method, the constructor. 
+
+		Examining \Cref{table:usr-java} and \cref{table:usr-py}, which show the size of objects in Java and Python, respectively, we see that the size of Java objects is equal to 
+
+	\section {Discussion}
+		\subsection{Future Research}
+		\subsection{Challenges and Difficulties}
+	\appendix
+		\section{Source Code}
+			\label{ap:source}
+			\subsection{usesizeof.c}
+				\lstinputlisting[style=appendixC, label={lst:c}]{src/usesizeof.c}
+			\subsection{UseSizeOf.java}
+				\lstinputlisting[style=appendixJava, label={lst:java}]{src/UseSizeOf.java}
+			\subsection{UseSizeOf.py}
+				\lstinputlisting[style=appendixPy, label={lst:py}]{src/UseSizeOf.py}
+			\subsection{Ant buildfile}
+				\lstinputlisting[style=appendixXML, label=lst:ant]{build.xml}
+
+\end{document}
