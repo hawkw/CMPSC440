@@ -175,8 +175,7 @@ public class UseSizeOf {
 				System.out.printf("%-12s & %d & %8d \\\\ \n", "float", bytes(Float.SIZE), Float.SIZE);
 				System.out.printf("%-12s & %d & %8d \\\\ \n", "double", bytes(Double.SIZE),  Double.SIZE);
 				System.out.printf("%-12s & %d & %8d \\\\ \n", "char", bytes(Character.SIZE), Character.SIZE);
-				System.out.printf("%-12s & %d & %8d \\\\ \n", "boolean", ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size(), 
-				                  										bits(ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size()));
+				System.out.printf("%-12s & %d & %8d \\\\ \n", "boolean", ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size(), bits(ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size()));
 			// ...otherwise...
 			} else {
 				// ...print out the standard table for the Java primitives
@@ -187,8 +186,7 @@ public class UseSizeOf {
 				System.out.printf("%-12s%8d%8d\n", "float", bytes(Float.SIZE), Float.SIZE);
 				System.out.printf("%-12s%8d%8d\n", "double", bytes(Double.SIZE),  Double.SIZE);
 				System.out.printf("%-12s%8d%8d\n", "char", bytes(Character.SIZE), Character.SIZE);
-				System.out.printf("%-12s%8d%8d\n", "boolean", ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size(), 
-				                  							bits(ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size()));
+				System.out.printf("%-12s%8d%8d\n", "boolean", ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size(), bits(ObjectProfiler.profile(new Boolean("true")).size() - ObjectProfiler.profile(new Object()).size()));
 			}
 
 		// print lines describing some other classes.
