@@ -43,7 +43,7 @@ eclim/*
 *.pydevproject
 .project
 .metadata
-bin/**
+**/bin/**
 tmp/**
 tmp/**/*
 *.tmp
@@ -116,3 +116,5 @@ eclim/.eclimrc_k
 *.ear
 
 *.bcf
+
+Lab6/bin/usesizeof
