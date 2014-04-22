@@ -10,3 +10,9 @@
 [submodule "remote-doc"]
 	path = remote-doc
 	url = git@github.com:TeamRemote/remote-doc.git
+[submodule "FinalProject/remote-doc"]
+	path = FinalProject/remote-doc
+	url = git@github.com:TeamRemote/remote-doc.git
+[submodule "FinalProject/remote-sublime"]
+	path = FinalProject/remote-sublime
+	url = git@github.com:TeamRemote/remote-sublime.git
