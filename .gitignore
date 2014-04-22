@@ -106,6 +106,7 @@ eclim/.eclimrc_k
 *.vrb
 *.xdy
 *.tdo
+*.run.xml
 
 # Also PDFs
 *.pdf

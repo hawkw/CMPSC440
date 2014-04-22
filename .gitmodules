@@ -16,3 +16,6 @@
 [submodule "FinalProject/remote-sublime"]
 	path = FinalProject/remote-sublime
 	url = git@github.com:TeamRemote/remote-sublime.git
+[submodule "notes"]
+	path = notes
+	url = https://gist.github.com/48cfb5994db6f4378dcd.git
