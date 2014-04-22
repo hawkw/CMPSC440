@@ -4,3 +4,9 @@
 [submodule "cs440s2014-share"]
 	path = cs440s2014-share
 	url = git@bitbucket.org:gkapfham/cs440s2014-share.git
+[submodule "remote-sublime"]
+	path = remote-sublime
+	url = git@github.com:TeamRemote/remote-sublime.git
+[submodule "remote-doc"]
+	path = remote-doc
+	url = git@github.com:TeamRemote/remote-doc.git
